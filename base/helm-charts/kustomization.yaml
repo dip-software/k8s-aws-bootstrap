@@ -2,5 +2,4 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - helm-charts
-  - letsencrypt-cert-issuer.yaml
+  - amazon-eks-pod-identity-webhook.yaml

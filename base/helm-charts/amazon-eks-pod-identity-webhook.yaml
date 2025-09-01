@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pod-identity-webhook
+---
+apiVersion: helm.cattle.io/v1
+kind: HelmChart
+metadata:
+  name: amazon-eks-pod-identity-webhook
+  namespace: kube-system
+  annotations:
+    helm.cattle.io/priority: "50"  # Lower priority for later installation
+spec:
+  repo: https://jkroepke.github.io/helm-charts/
+  chart: amazon-eks-pod-identity-webhook 
+  targetNamespace: pod-identity-webhook
+  valuesContent: |-
+    replicaCount: 2
+    config:
+      stsRegionalEndpoint: true
+    image:
+      registry: public.ecr.aws
+      repository: eks/amazon-eks-pod-identity-webhook
