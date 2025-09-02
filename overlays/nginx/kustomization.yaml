@@ -6,3 +6,4 @@ resources:
   - ingress-nginx-argocd-app.yaml
   - aws-load-balancer-controller-argocd-app.yaml
   - external-dns-argocd-app.yaml
+  - ingress-argocd.yaml
