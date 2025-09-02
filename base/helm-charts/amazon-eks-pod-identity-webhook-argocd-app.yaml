@@ -16,6 +16,7 @@ spec:
         replicaCount: 2
         config:
           stsRegionalEndpoint: true
+          defaultAwsRegion: ${AWS_REGION}
         image:
           registry: public.ecr.aws
           repository: eks/amazon-eks-pod-identity-webhook
