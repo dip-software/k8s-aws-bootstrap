@@ -18,6 +18,11 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
+  ignoreDifferences:
+    - group: apps
+      jsonPointers:
+        - /spec/replicas
+      kind: Deployment
   syncPolicy:
     automated:
       prune: true
