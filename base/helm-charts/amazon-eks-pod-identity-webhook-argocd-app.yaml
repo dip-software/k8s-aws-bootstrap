@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: amazon-eks-pod-identity-webhook
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://jkroepke.github.io/helm-charts/
+    targetRevision: v2.5.2
+    chart: amazon-eks-pod-identity-webhook 
+    helm:
+      valuesObject: 
+        replicaCount: 2
+        config:
+          stsRegionalEndpoint: true
+        image:
+          registry: public.ecr.aws
+          repository: eks/amazon-eks-pod-identity-webhook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  ignoreDifferences:
+    - group: apps
+      jsonPointers:
+        - /spec/replicas
+      kind: Deployment
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

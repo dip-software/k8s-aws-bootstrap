@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - cert-manager-argocd-app.yaml
   - aws-load-balancer-controller-argocd-app.yaml
+  - amazon-eks-pod-identity-webhook-argocd-app.yaml
