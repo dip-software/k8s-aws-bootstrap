@@ -3,3 +3,4 @@ kind: Kustomization
 
 resources:
   - cert-manager-argocd-app.yaml
+  - aws-load-balancer-controller-argocd-app.yaml
