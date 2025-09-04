@@ -18,16 +18,32 @@ spec:
         storageClasses:
           - name: gp3-encrypted
             volumeBindingMode: WaitForFirstConsumer
+            reclaimPolicy: Delete
             parameters:
               type: gp3
               encrypted: "true"
             provisioner: ebs.csi.aws.com
         controller:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 75Mi
+            limits:
+              cpu: 100m
+              memory: 150Mi
           serviceAccount:
             create: true
             name: aws-ebs-csi-driver
             annotations:
               eks.amazonaws.com/role-arn: ${AWS_EBS_CSI_DRIVER_ROLE_ARN}
+        node:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 43Mi
+            limits:
+              cpu: 100m
+              memory: 86Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system

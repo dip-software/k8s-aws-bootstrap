@@ -25,11 +25,11 @@ spec:
         replicaCount: 2
         resources:
           limits:
-            cpu: 200m
-            memory: 500Mi
+            cpu: 50m
+            memory: 128Mi
           requests:
-            cpu: 100m
-            memory: 200Mi
+            cpu: 5m
+            memory: 42Mi
         nodeSelector:
           kubernetes.io/os: linux
         affinity:

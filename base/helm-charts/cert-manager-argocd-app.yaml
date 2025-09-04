@@ -12,9 +12,32 @@ spec:
     targetRevision: v1.18.2
     chart: cert-manager
     helm:
-      valuesObject: 
+      valuesObject:
         crds:
           enabled: true
+        resources:
+          requests:
+            cpu: 5m
+            memory: 25Mi
+          limits:
+            cpu: 50m
+            memory: 50Mi
+        cainjector:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 35Mi
+            limits:
+              cpu: 50m
+              memory: 70Mi
+        webhook:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 11Mi
+            limits:
+              cpu: 50m
+              memory: 22Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
