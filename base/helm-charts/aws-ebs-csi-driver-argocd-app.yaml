@@ -15,6 +15,13 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        storageClasses:
+          - name: gp3-encrypted
+            volumeBindingMode: WaitForFirstConsumer
+            parameters:
+              type: gp3
+              encrypted: "true"
+            provisioner: ebs.csi.aws.com
         controller:
           serviceAccount:
             create: true
