@@ -1,0 +1,229 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-cd
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        global:
+          # Enable high availability mode
+          ha:
+            enabled: false
+
+        # Configs
+        configs:
+          cmp:
+            create: true
+            plugins:
+              envsubst:
+                init:
+                  command: [sh]
+                  args: ["-c", 'echo "Initializing..."']
+                generate:
+                  command: [sh, -c, "/usr/local/bin/envsubst-plugin.sh"]
+                discover:
+                  filename: "kustomization.yaml"
+
+        # Configure the Argo CD server
+        server:
+          # Enable high availability for the server
+          replicas: 2
+          
+          # Resource configuration
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          
+          # Anti-affinity to spread replicas across nodes
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: argocd-server
+                  topologyKey: kubernetes.io/hostname
+          
+          # Enable metrics for monitoring
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: false  # Enable if you have Prometheus operator
+          
+          # Configure OIDC if needed (can be enabled later)
+          config:      
+            # URL configuration
+            # url: "https://argocd.{{ .ClusterFQDN }}"  # Update with your domain
+            
+            # Application instance label key
+            application.instanceLabelKey: argocd.argoproj.io/instance
+
+        # Configure the repository server
+        repoServer:
+          replicas: 2
+          
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 100m
+              memory: 128Mi
+          
+          affinity:
+            podAntiAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                podAffinityTerm:
+                  labelSelector:
+                    matchLabels:
+                      app.kubernetes.io/name: argocd-repo-server
+                  topologyKey: kubernetes.io/hostname
+          
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: false
+          
+          initContainers:
+            - name: install-envsubst
+              image: debian:stable-slim
+              command: ["/bin/sh", "-c"]
+              args:
+              - echo "Installing envsubst...";
+                apt-get update -y && apt-get install gettext daemontools -y;
+                cp -v /usr/bin/envsubst /usr/bin/envdir /custom-tools/;
+                echo "Done.";
+              volumeMounts:
+              - mountPath: /custom-tools
+                name: custom-tools
+              resources:
+                limits:
+                  memory: "200Mi"
+                  cpu: "100m"
+                requests:
+                  memory: "100Mi"
+                  cpu: "100m"
+          
+          extraContainers:
+            # Create Envsubst Plugin container used for envsubst on resource files
+            - name: envsubst
+              securityContext:
+                runAsNonRoot: true
+                #Bug work-around. Change this back to 999 in the future
+                runAsUser: 999
+              image: quay.io/argoproj/argocd:v3.1.1
+              command: [/var/run/argocd/argocd-cmp-server]
+              args:
+                - --loglevel
+                - debug
+              volumeMounts:
+                - mountPath: /var/run/argocd
+                  name: var-files
+                - mountPath: /home/argocd/cmp-server/plugins
+                  name: plugins
+                - mountPath: /home/argocd/cmp-server/config/plugin.yaml
+                  subPath: envsubst.yaml
+                  name: argocd-cmp-cm
+                - mountPath: /tmp
+                  name: cmp-tmp
+                - mountPath: /usr/local/bin/envsubst
+                  name: custom-tools
+                  subPath: envsubst
+                - mountPath: /usr/local/bin/envdir
+                  name: custom-tools
+                  subPath: envdir
+                - mountPath: /usr/local/bin/envsubst-plugin.sh
+                  name: envsubst-plugin
+                  subPath: envsubst-plugin.sh
+                - mountPath: /home/argocd/cmp-server/config/env
+                  name: envsubst-env-vars
+                - mountPath: /custom-tools
+                  name: custom-tools
+              resources:
+                limits:
+                  memory: "200Mi"
+                  cpu: "100m"
+                requests:
+                  memory: "100Mi"
+                  cpu: "100m"
+              envFrom:
+                - configMapRef:
+                    name: envsubst-plugin-env-vars
+          
+          volumes:
+            - configMap:
+                name: envsubst-plugin
+                defaultMode: 0755
+              name: envsubst-plugin
+            - configMap:
+                name: envsubst-plugin-env-vars
+              name: envsubst-env-vars
+            - configMap:
+                name: argocd-cmp-cm
+              name: argocd-cmp-cm
+            - emptyDir: {}
+              name: cmp-tmp
+            - emptyDir: {}
+              name: custom-tools
+
+        # Configure the application controller
+        controller:
+          replicas: 1  # Can be increased for larger clusters
+          
+          resources:
+            limits:
+              cpu: 500m
+              memory: 512Mi
+            requests:
+              cpu: 250m
+              memory: 256Mi
+          
+          metrics:
+            enabled: true
+            serviceMonitor:
+              enabled: false
+
+        # Configure Redis for caching (used in HA mode)
+        redis:
+          enabled: true
+          
+          # Redis HA configuration
+          ha:
+            enabled: false
+
+        # Configure Dex for OIDC (if using external OIDC)
+        dex:
+          enabled: false  # Enable if you need Dex for OIDC
+
+        # Notifications controller (optional)
+        notifications:
+          enabled: true
+
+        # ApplicationSet controller
+        applicationSet:
+          enabled: true
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

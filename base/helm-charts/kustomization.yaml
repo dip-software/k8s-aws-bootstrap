@@ -6,3 +6,4 @@ resources:
   - amazon-eks-pod-identity-webhook-argocd-app.yaml
   - aws-ebs-csi-driver-argocd-app.yaml
   - crossplane-argocd-app.yaml
+  - argocd-argocd-app.yaml
