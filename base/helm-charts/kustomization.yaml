@@ -7,3 +7,4 @@ resources:
   - aws-ebs-csi-driver-argocd-app.yaml
   - crossplane-argocd-app.yaml
   - argocd-argocd-app.yaml
+  - kyverno-argocd-app.yaml
