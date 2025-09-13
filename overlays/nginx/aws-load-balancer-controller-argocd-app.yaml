@@ -13,6 +13,7 @@ spec:
     chart: aws-load-balancer-controller
     helm:
       valuesObject: 
+        syncPeriod: 0h5m0s
         clusterName: ${CLUSTER_NAME}
         region: ${AWS_REGION}
         vpcId: ${AWS_VPC_ID}
