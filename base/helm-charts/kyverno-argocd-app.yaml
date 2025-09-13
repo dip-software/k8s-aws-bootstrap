@@ -14,6 +14,10 @@ spec:
     chart: kyverno
     repoURL: https://kyverno.github.io/kyverno
     targetRevision: 3.5.1
+    helm:
+      valuesObject:
+        admissionController:
+          replicas: 2
   syncPolicy:
     automated:
       prune: true
