@@ -17,6 +17,8 @@ spec:
         config:
           stsRegionalEndpoint: true
           defaultAwsRegion: ${AWS_REGION}
+          extraArgs:
+            - --service-account-lookup-grace-period=5s
         image:
           registry: public.ecr.aws
           repository: eks/amazon-eks-pod-identity-webhook
