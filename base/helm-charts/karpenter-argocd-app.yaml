@@ -13,6 +13,17 @@ spec:
     path: .
     helm:
       valuesObject:
+        settings:
+          syncPeriod: 0h5m0s
+          clusterName: ${CLUSTER_NAME}
+          clusterEndpoint: ${CLUSTER_ENDPOINT}
+          aws:
+            # defaultInstanceProfile: ${KARPENTER_INSTANCE_PROFILE}
+            region: ${AWS_REGION}
+            subnetSelector:
+              kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+            securityGroupSelector:
+              kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
         # Replica count for high availability
         replicas: 2
         
