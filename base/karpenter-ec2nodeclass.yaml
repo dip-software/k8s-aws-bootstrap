@@ -41,6 +41,10 @@ spec:
     apt-get update
     apt-get install -y curl awscli
     
+    # Get instance metadata for provider-id
+    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
+    AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    
     # Retrieve K3s token securely from AWS Systems Manager Parameter Store
     K3S_TOKEN=$(aws ssm get-parameter \
       --name "${K3S_TOKEN_PARAMETER_NAME}" \
@@ -59,9 +63,12 @@ spec:
       --server ${CLUSTER_ENDPOINT} \
       --token "$K3S_TOKEN" \
       --node-name $(hostname) \
-      --kubelet-arg="provider-id=aws:///$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
+      --kubelet-arg="provider-id=aws:///$AZ/$INSTANCE_ID" \
       --kubelet-arg="cloud-provider=external" \
-      --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute"
+      --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute" \
+      --node-label="kubernetes.io/cluster/${CLUSTER_NAME}=owned" \
+      --node-label="node.kubernetes.io/instance-type=$(curl -s http://169.254.169.254/latest/meta-data/instance-type)" \
+      --node-label="topology.kubernetes.io/zone=$AZ"
     
     # Verify K3s agent is running
     systemctl enable k3s-agent
@@ -92,8 +99,8 @@ spec:
   # Additional tags
   tags:
     Name: "${CLUSTER_NAME}-karpenter-node"
-    "kubernetes.io/cluster/${CLUSTER_NAME}": "owned"
     ManagedBy: "karpenter"
+    Environment: "production"
     
   # Instance metadata options
   metadataOptions:
