@@ -18,7 +18,7 @@ spec:
           clusterName: ${CLUSTER_NAME}
           clusterEndpoint: ${CLUSTER_ENDPOINT}
           aws:
-            # defaultInstanceProfile: ${KARPENTER_INSTANCE_PROFILE}
+            defaultInstanceProfile: ${KARPENTER_INSTANCE_PROFILE}
             region: ${AWS_REGION}
             subnetSelector:
               kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
