@@ -22,15 +22,23 @@ spec:
   # Instance profile (pre-created for K3s)
   instanceProfile: ${KARPENTER_INSTANCE_PROFILE}
   
-  # Subnet selection
+  # Subnet selection - prefer private subnets for worker nodes
   subnetSelectorTerms:
+    # Primary: Select private subnets by role tag
     - tags:
-        kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
-        
+        kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
+        kubernetes.io/role/internal-elb: "1"
+    # Fallback: Select by karpenter discovery tag
+    - tags:
+        karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
   # Security group selection  
   securityGroupSelectorTerms:
+    # Primary: Select by cluster tag
     - tags:
-        kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+        kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
+    # Fallback: Select by karpenter discovery tag
+    - tags:
+        karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
         
   # Custom UserData for K3s node joining
   userData: |

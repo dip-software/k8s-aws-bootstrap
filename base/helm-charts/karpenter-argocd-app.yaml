@@ -20,10 +20,11 @@ spec:
           aws:
             defaultInstanceProfile: ${KARPENTER_INSTANCE_PROFILE}
             region: ${AWS_REGION}
+            vpcId: ${AWS_VPC_ID}
             subnetSelector:
-              kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+              kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
             securityGroupSelector:
-              kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+              kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
         # Replica count for high availability
         replicas: 2
         
