@@ -1,0 +1,103 @@
+apiVersion: karpenter.k8s.aws/v1
+kind: EC2NodeClass
+metadata:
+  name: default
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  # Ubuntu AMI family (note: Ubuntu support was dropped in Karpenter v1.0+)
+  # Using Custom AMI family with Ubuntu AMI selection
+  amiFamily: Custom
+  
+  # Select Ubuntu AMIs for K3s (both AMD64 and ARM64)
+  amiSelectorTerms:
+    # Ubuntu 22.04 LTS AMD64
+    - name: "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-amd64-*"
+      owner: "099720109477" # Canonical
+    # Ubuntu 22.04 LTS ARM64  
+    - name: "ubuntu/images/hvm-ssd/ubuntu-jammy-22.04-arm64-*"
+      owner: "099720109477" # Canonical
+        
+  # Instance profile (pre-created for K3s)
+  instanceProfile: ${KARPENTER_INSTANCE_PROFILE}
+  
+  # Subnet selection
+  subnetSelectorTerms:
+    - tags:
+        kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+        
+  # Security group selection  
+  securityGroupSelectorTerms:
+    - tags:
+        kubernetes.io/cluster/${CLUSTER_NAME}: "owned"
+        
+  # Custom UserData for K3s node joining
+  userData: |
+    #!/bin/bash
+    set -e
+    
+    # Update system
+    apt-get update
+    apt-get install -y curl awscli
+    
+    # Retrieve K3s token securely from AWS Systems Manager Parameter Store
+    K3S_TOKEN=$(aws ssm get-parameter \
+      --name "${K3S_TOKEN_PARAMETER_NAME}" \
+      --with-decryption \
+      --region ${AWS_REGION} \
+      --query "Parameter.Value" \
+      --output text)
+    
+    if [ -z "$K3S_TOKEN" ]; then
+      echo "Failed to retrieve K3s token from Parameter Store"
+      exit 1
+    fi
+    
+    # Install K3s agent
+    curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="agent" sh -s - \
+      --server ${CLUSTER_ENDPOINT} \
+      --token "$K3S_TOKEN" \
+      --node-name $(hostname) \
+      --kubelet-arg="provider-id=aws:///$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)/$(curl -s http://169.254.169.254/latest/meta-data/instance-id)" \
+      --kubelet-arg="cloud-provider=external" \
+      --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute"
+    
+    # Verify K3s agent is running
+    systemctl enable k3s-agent
+    systemctl start k3s-agent
+    
+    # Wait for kubelet to be ready and node to register
+    while ! systemctl is-active --quiet k3s-agent; do
+      echo "Waiting for k3s-agent to be active..."
+      sleep 5
+    done
+    
+    # Wait for node to appear in cluster (the taint removal will be handled by Karpenter)
+    echo "K3s agent started successfully. Node should be registering with cluster..."
+    
+    # Log successful completion
+    echo "Node $(hostname) has completed K3s agent setup"
+    
+  # Block device mapping for Ubuntu
+  blockDeviceMappings:
+    - deviceName: /dev/sda1
+      rootVolume: true
+      ebs:
+        volumeSize: 20Gi
+        volumeType: gp3
+        encrypted: true
+        deleteOnTermination: true
+        
+  # Additional tags
+  tags:
+    Name: "${CLUSTER_NAME}-karpenter-node"
+    "kubernetes.io/cluster/${CLUSTER_NAME}": "owned"
+    ManagedBy: "karpenter"
+    
+  # Instance metadata options
+  metadataOptions:
+    httpEndpoint: enabled
+    httpProtocolIPv6: disabled
+    httpPutResponseHopLimit: 2
+    httpTokens: required
