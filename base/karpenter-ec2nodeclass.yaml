@@ -49,9 +49,13 @@ spec:
     apt-get update
     apt-get install -y curl awscli
     
-    # Get instance metadata for provider-id
-    INSTANCE_ID=$(curl -s http://169.254.169.254/latest/meta-data/instance-id)
-    AZ=$(curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    # Get IMDSv2 token
+    TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    
+    # Get instance metadata for provider-id using IMDSv2
+    INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)
+    AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
+    INSTANCE_TYPE=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-type)
     
     # Retrieve K3s token securely from AWS Systems Manager Parameter Store
     K3S_TOKEN=$(aws ssm get-parameter \
@@ -75,7 +79,7 @@ spec:
       --kubelet-arg="cloud-provider=external" \
       --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute" \
       --node-label="kubernetes.io/cluster/${CLUSTER_NAME}=owned" \
-      --node-label="node.kubernetes.io/instance-type=$(curl -s http://169.254.169.254/latest/meta-data/instance-type)" \
+      --node-label="node.kubernetes.io/instance-type=$INSTANCE_TYPE" \
       --node-label="topology.kubernetes.io/zone=$AZ"
     
     # Verify K3s agent is running
