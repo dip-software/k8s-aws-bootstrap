@@ -81,7 +81,6 @@ spec:
       --kubelet-arg="provider-id=aws:///$AZ/$INSTANCE_ID" \
       --kubelet-arg="cloud-provider=external" \
       --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute" \
-      --node-label="kubernetes.io/cluster/${CLUSTER_NAME}=owned" \
       --node-label="node.kubernetes.io/instance-type=$INSTANCE_TYPE" \
       --node-label="topology.kubernetes.io/zone=$AZ"
     
