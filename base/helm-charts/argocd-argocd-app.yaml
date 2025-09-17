@@ -190,7 +190,7 @@ spec:
               memory: 768Mi
             requests:
               cpu: 250m
-              memory: 256Mi
+              memory: 384Mi
           
           metrics:
             enabled: true
