@@ -9,3 +9,4 @@ resources:
   - crossplane-argocd-app.yaml
   - argocd-argocd-app.yaml
   - kyverno-argocd-app.yaml
+  - kube-prometheus-stack-argocd-app.yaml

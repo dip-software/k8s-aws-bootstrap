@@ -1,0 +1,66 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "15"
+spec:
+  project: default
+  source:
+    repoURL: https://prometheus-community.github.io/helm-charts
+    chart: kube-prometheus-stack
+    targetRevision: "*"
+    helm:
+      valuesObject:
+        prometheus:
+          prometheusSpec:
+            resources:
+              requests:
+                cpu: 15m
+                memory: 341Mi
+              limits:
+                cpu: 200m
+                memory: 682Mi
+        grafana:
+          resources:
+            requests:
+              cpu: 10m
+              memory: 367Mi
+            limits:
+              cpu: 100m
+              memory: 734Mi
+        prometheusOperator:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 25Mi
+            limits:
+              cpu: 50m
+              memory: 50Mi
+        kubeStateMetrics:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 19Mi
+            limits:
+              cpu: 50m
+              memory: 38Mi
+        nodeExporter:
+          resources:
+            requests:
+              cpu: 5m
+              memory: 12Mi
+            limits:
+              cpu: 50m
+              memory: 24Mi
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prometheus
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
