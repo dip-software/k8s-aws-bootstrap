@@ -15,6 +15,14 @@ spec:
       valuesObject:
         crds:
           enabled: true
+        
+        # ServiceAccount configuration with IRSA
+        serviceAccount:
+          create: true
+          name: cert-manager
+          annotations:
+            eks.amazonaws.com/role-arn: ${CERT_MANAGER_ROLE_ARN}
+            
         resources:
           requests:
             cpu: 5m

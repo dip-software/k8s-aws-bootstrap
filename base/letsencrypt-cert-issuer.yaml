@@ -15,7 +15,5 @@ spec:
       name: letsencrypt-prod
     # Add a single challenge solver, HTTP01 using nginx
     solvers:
-    - selector: {}
-      http01:
-        ingress:
-          class: nginx
+    - dns01:
+        route53: {}
