@@ -66,7 +66,7 @@ spec:
           # Configure OIDC if needed (can be enabled later)
           config:      
             # URL configuration
-            # url: "https://argocd.{{ .ClusterFQDN }}"  # Update with your domain
+            url: "https://argocd.${CLUSTER_FQDN}"
             
             # Application instance label key
             application.instanceLabelKey: argocd.argoproj.io/instance
