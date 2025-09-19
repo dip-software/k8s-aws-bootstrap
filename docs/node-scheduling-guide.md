@@ -48,17 +48,21 @@ These workloads are configured with **required** nodeAffinity to run ONLY on sta
    - Required by many other critical workloads for AWS IAM integration
    - Configured in: `base/helm-charts/amazon-eks-pod-identity-webhook-argocd-app.yaml`
 
-9. **CoreDNS** (EKS Add-on)
-   - **IMPORTANT**: CoreDNS is typically managed as an EKS add-on
-   - You need to configure the EKS add-on to use nodeSelectors for static-worker nodes
-   - This is not managed by ArgoCD apps in this repository
-   - Configure via AWS EKS Console, CLI, or Terraform/Pulumi
+9. **Prometheus Stack (all components)**
+   - Critical for monitoring cluster health and critical workloads
+   - Includes Prometheus, Grafana, Prometheus Operator, and kube-state-metrics
+   - Configured in: `base/helm-charts/kube-prometheus-stack-argocd-app.yaml`
+
+10. **CoreDNS** (EKS Add-on)
+    - **IMPORTANT**: CoreDNS is typically managed as an EKS add-on
+    - You need to configure the EKS add-on to use nodeSelectors for static-worker nodes
+    - This is not managed by ArgoCD apps in this repository
+    - Configure via AWS EKS Console, CLI, or Terraform/Pulumi
 
 ## Non-Critical Workloads (Prefer Karpenter Nodes)
 
 These workloads are configured with **preferred** nodeAffinity to run on Karpenter nodes, but can fall back to static nodes:
 
-- Prometheus Stack (Prometheus, Grafana, Prometheus Operator, kube-state-metrics)
 - Ingress NGINX Controller
 - Crossplane
 
