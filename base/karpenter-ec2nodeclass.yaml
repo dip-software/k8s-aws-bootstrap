@@ -49,28 +49,24 @@ spec:
     apt-get update
     apt-get install -y curl awscli
     
-    # Increase file descriptor limits to prevent "too many open files" errors
-    cat >> /etc/security/limits.conf << 'EOF'
-    * soft nofile 65536
-    * hard nofile 65536
-    * soft nproc 32768
-    * hard nproc 32768
-    root soft nofile 65536
-    root hard nofile 65536
-    root soft nproc 32768
-    root hard nproc 32768
-    EOF
+    # Increase file descriptor limits to handle many containers
+    # Using 100000 to account for container runtime overhead (some containers inherit ~64512 instead of 65536)
+    echo "# File descriptor limits for high container density" >> /etc/security/limits.conf
+    echo "* soft nofile 100000" >> /etc/security/limits.conf
+    echo "* hard nofile 100000" >> /etc/security/limits.conf
+    echo "root soft nofile 100000" >> /etc/security/limits.conf
+    echo "root hard nofile 100000" >> /etc/security/limits.conf
     
     # Set system-wide limits for systemd services
     mkdir -p /etc/systemd/system.conf.d
     cat > /etc/systemd/system.conf.d/limits.conf << 'EOF'
     [Manager]
-    DefaultLimitNOFILE=65536
+    DefaultLimitNOFILE=100000
     DefaultLimitNPROC=32768
     EOF
     
     # Set limits for current session
-    ulimit -n 65536
+    ulimit -n 100000
     ulimit -u 32768
     
     # Reload systemd to pick up new limits
@@ -80,7 +76,7 @@ spec:
     mkdir -p /etc/systemd/system/k3s-agent.service.d
     cat > /etc/systemd/system/k3s-agent.service.d/limits.conf << 'EOF'
     [Service]
-    LimitNOFILE=65536
+    LimitNOFILE=100000
     LimitNPROC=32768
     EOF
     
