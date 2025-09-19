@@ -81,6 +81,9 @@ spec:
       --kubelet-arg="provider-id=aws:///$AZ/$INSTANCE_ID" \
       --kubelet-arg="cloud-provider=external" \
       --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute" \
+      --kubelet-arg="kube-reserved=cpu=250m,memory=512Mi,ephemeral-storage=1Gi" \
+      --kubelet-arg="system-reserved=cpu=250m,memory=384Mi,ephemeral-storage=1Gi" \
+      --kubelet-arg="enforce-node-allocatable=pods" \
       --node-label="node.kubernetes.io/instance-type=$INSTANCE_TYPE" \
       --node-label="topology.kubernetes.io/zone=$AZ"
     
