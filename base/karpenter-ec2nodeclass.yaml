@@ -77,7 +77,7 @@ spec:
     
     # Install K3s agent
     curl -sfL https://get.k3s.io | sh -s - \
-      --node-name $(hostname) \
+      --node-name $INSTANCE_ID \
       --kubelet-arg="provider-id=aws:///$AZ/$INSTANCE_ID" \
       --kubelet-arg="cloud-provider=external" \
       --kubelet-arg="register-with-taints=karpenter.sh/unregistered=true:NoExecute" \
