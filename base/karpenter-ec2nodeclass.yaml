@@ -73,6 +73,17 @@ spec:
     ulimit -n 65536
     ulimit -u 32768
     
+    # Reload systemd to pick up new limits
+    systemctl daemon-reload
+    
+    # Create K3s service override to ensure it gets higher limits
+    mkdir -p /etc/systemd/system/k3s-agent.service.d
+    cat > /etc/systemd/system/k3s-agent.service.d/limits.conf << 'EOF'
+    [Service]
+    LimitNOFILE=65536
+    LimitNPROC=32768
+    EOF
+    
     # Get IMDSv2 token
     TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
     
@@ -112,6 +123,7 @@ spec:
       --node-label="topology.kubernetes.io/zone=$AZ"
     
     # Verify K3s agent is running
+    systemctl daemon-reload  # Reload again to pick up K3s service overrides
     systemctl enable k3s-agent
     systemctl start k3s-agent
     
