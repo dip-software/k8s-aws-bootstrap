@@ -15,6 +15,23 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        # Require static-worker nodes for external-dns (critical)
+        nodeSelector:
+          node-type: static-worker
+        tolerations:
+        - key: node-role.kubernetes.io/static-worker
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - static-worker
         serviceAccount:
           create: true
           name: external-dns

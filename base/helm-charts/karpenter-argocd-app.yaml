@@ -48,14 +48,16 @@ spec:
         # Logging configuration
         logLevel: info
         
-        # Node affinity and tolerations
+        # Node affinity and tolerations - Run only on static-worker nodes
         affinity:
           nodeAffinity:
             requiredDuringSchedulingIgnoredDuringExecution:
               nodeSelectorTerms:
               - matchExpressions:
-                - key: karpenter.sh/provisioner-name
-                  operator: DoesNotExist
+                - key: node-type
+                  operator: In
+                  values:
+                  - static-worker
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
@@ -71,6 +73,10 @@ spec:
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
+        - key: node-role.kubernetes.io/static-worker
+          operator: Equal
+          value: "true"
+          effect: NoSchedule
         
         # Security configuration
         securityContext:

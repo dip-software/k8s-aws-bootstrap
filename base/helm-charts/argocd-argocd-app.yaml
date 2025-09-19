@@ -47,8 +47,23 @@ spec:
               cpu: 100m
               memory: 128Mi
           
-          # Anti-affinity to spread replicas across nodes
+          # Anti-affinity to spread replicas across nodes and require static-worker nodes
+          nodeSelector:
+            node-type: static-worker
+          tolerations:
+          - key: node-role.kubernetes.io/static-worker
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
           affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - static-worker
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100
@@ -84,7 +99,22 @@ spec:
               cpu: 100m
               memory: 128Mi
           
+          nodeSelector:
+            node-type: static-worker
+          tolerations:
+          - key: node-role.kubernetes.io/static-worker
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
           affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - static-worker
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100
@@ -184,6 +214,24 @@ spec:
         # Configure the application controller
         controller:
           replicas: 1  # Can be increased for larger clusters
+          
+          # Require static-worker nodes for ArgoCD controller
+          nodeSelector:
+            node-type: static-worker
+          tolerations:
+          - key: node-role.kubernetes.io/static-worker
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - static-worker
           
           resources:
             limits:

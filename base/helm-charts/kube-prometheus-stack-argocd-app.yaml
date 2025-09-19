@@ -15,6 +15,17 @@ spec:
       valuesObject:
         prometheus:
           prometheusSpec:
+            # Prefer Karpenter nodes for Prometheus
+            affinity:
+              nodeAffinity:
+                preferredDuringSchedulingIgnoredDuringExecution:
+                - weight: 100
+                  preference:
+                    matchExpressions:
+                    - key: node-type
+                      operator: In
+                      values:
+                      - karpenter-managed
             resources:
               requests:
                 cpu: 15m
@@ -23,6 +34,17 @@ spec:
                 cpu: 200m
                 memory: 682Mi
         grafana:
+          # Prefer Karpenter nodes for Grafana
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - karpenter-managed
           resources:
             requests:
               cpu: 10m
@@ -31,6 +53,17 @@ spec:
               cpu: 100m
               memory: 734Mi
         prometheusOperator:
+          # Prefer Karpenter nodes for Prometheus Operator
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - karpenter-managed
           resources:
             requests:
               cpu: 5m
@@ -39,6 +72,17 @@ spec:
               cpu: 50m
               memory: 50Mi
         kubeStateMetrics:
+          # Prefer Karpenter nodes for KSM
+          affinity:
+            nodeAffinity:
+              preferredDuringSchedulingIgnoredDuringExecution:
+              - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - karpenter-managed
           resources:
             requests:
               cpu: 5m
@@ -47,6 +91,7 @@ spec:
               cpu: 50m
               memory: 38Mi
         nodeExporter:
+          # NodeExporter should run on all nodes (DaemonSet), no node preference needed
           resources:
             requests:
               cpu: 5m

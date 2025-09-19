@@ -24,6 +24,23 @@ spec:
               encrypted: "true"
             provisioner: ebs.csi.aws.com
         controller:
+          # Require static-worker nodes for EBS CSI controller (critical)
+          nodeSelector:
+            node-type: static-worker
+          tolerations:
+          - key: node-role.kubernetes.io/static-worker
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - static-worker
           resources:
             requests:
               cpu: 10m
@@ -37,6 +54,7 @@ spec:
             annotations:
               eks.amazonaws.com/role-arn: ${AWS_EBS_CSI_DRIVER_ROLE_ARN}
         node:
+          # Node DaemonSet should run on all nodes, no preference needed
           resources:
             requests:
               cpu: 10m
