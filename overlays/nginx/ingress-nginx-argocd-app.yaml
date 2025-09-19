@@ -21,7 +21,7 @@ spec:
     helm:
       valuesObject:
         controller:
-          replicaCount: 2
+          replicaCount: 4  # Increased for hybrid deployment
           resources:
             limits:
               cpu: 100m
@@ -29,10 +29,20 @@ spec:
             requests:
               cpu: 10m
               memory: 36Mi
+          # Hybrid scheduling: prefer static nodes, allow karpenter for scale-out
           affinity:
             nodeAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
+              # Strongly prefer static worker nodes first
               - weight: 100
+                preference:
+                  matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - static-worker
+              # Allow karpenter nodes for scale-out
+              - weight: 10
                 preference:
                   matchExpressions:
                   - key: node-type
@@ -58,9 +68,46 @@ spec:
                       operator: In
                       values:
                       - controller
+                  topologyKey: kubernetes.io/hostname  # Spread across individual nodes
+              - weight: 50
+                podAffinityTerm:
+                  labelSelector:
+                    matchExpressions:
+                    - key: app.kubernetes.io/name
+                      operator: In
+                      values:
+                      - ingress-nginx
+                    - key: app.kubernetes.io/component
+                      operator: In
+                      values:
+                      - controller
                   topologyKey: topology.kubernetes.io/zone
+          # Topology spread for hybrid placement
+          topologySpreadConstraints:
+          # Prefer even distribution across node types
+          - maxSkew: 2
+            topologyKey: node-type
+            whenUnsatisfiable: ScheduleAnyway  # Soft constraint
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ingress-nginx
+                app.kubernetes.io/component: controller
+          # Ensure spread across zones
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule  # Hard constraint
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/name: ingress-nginx
+                app.kubernetes.io/component: controller
           nodeSelector:
             kubernetes.io/os: linux
+          tolerations:
+          # Allow scheduling on static worker nodes (they are tainted)
+          - key: node-role.kubernetes.io/static-worker
+            operator: Equal
+            value: "true"
+            effect: NoSchedule
           service:
             type: LoadBalancer
             annotations:
@@ -71,7 +118,7 @@ spec:
               service.beta.kubernetes.io/aws-load-balancer-healthcheck-interval: "10"
           podDisruptionBudget:
             enabled: true
-            minAvailable: 1
+            minAvailable: 2  # Ensure at least 2 replicas always available
   destination:
     server: https://kubernetes.default.svc
     namespace: ingress-nginx
