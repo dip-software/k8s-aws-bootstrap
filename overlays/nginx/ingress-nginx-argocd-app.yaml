@@ -31,34 +31,13 @@ spec:
               memory: 36Mi
           affinity:
             nodeAffinity:
-              preferredDuringSchedulingIgnoredDuringExecution:
-              - weight: 100
-                preference:
-                  matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - karpenter-managed
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                 - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
-            podAntiAffinity:
-              preferredDuringSchedulingIgnoredDuringExecution:
-              - weight: 100
-                podAffinityTerm:
-                  labelSelector:
-                    matchExpressions:
-                    - key: app.kubernetes.io/name
-                      operator: In
-                      values:
-                      - ingress-nginx
-                    - key: app.kubernetes.io/component
-                      operator: In
-                      values:
-                      - controller
-                  topologyKey: topology.kubernetes.io/zone
+                  - key: node-type
+                    operator: NotIn
+                    values:
+                    - static-worker
           nodeSelector:
             kubernetes.io/os: linux
           service:
