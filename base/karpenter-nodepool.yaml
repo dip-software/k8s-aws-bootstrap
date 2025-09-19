@@ -51,6 +51,11 @@ spec:
         - key: karpenter.k8s.aws/instance-size
           operator: In
           values: ["small", "medium", "large", "xlarge", "2xlarge"]
+
+        # Ensure sufficient memory capacity per node (>= 2Gi)
+        - key: karpenter.k8s.aws/instance-memory
+          operator: Gt
+          values: ["1"]
           
       # Startup taints for K3s initialization
       startupTaints:
