@@ -49,6 +49,30 @@ spec:
     apt-get update
     apt-get install -y curl awscli
     
+    # Increase file descriptor limits to prevent "too many open files" errors
+    cat >> /etc/security/limits.conf << 'EOF'
+    * soft nofile 65536
+    * hard nofile 65536
+    * soft nproc 32768
+    * hard nproc 32768
+    root soft nofile 65536
+    root hard nofile 65536
+    root soft nproc 32768
+    root hard nproc 32768
+    EOF
+    
+    # Set system-wide limits for systemd services
+    mkdir -p /etc/systemd/system.conf.d
+    cat > /etc/systemd/system.conf.d/limits.conf << 'EOF'
+    [Manager]
+    DefaultLimitNOFILE=65536
+    DefaultLimitNPROC=32768
+    EOF
+    
+    # Set limits for current session
+    ulimit -n 65536
+    ulimit -u 32768
+    
     # Get IMDSv2 token
     TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
     
