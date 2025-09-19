@@ -9,6 +9,11 @@ metadata:
     - resources-finalizer.argocd.argoproj.io
 spec:
   project: default
+  ignoreDifferences:
+    - group: "apps"
+      kind: "Deployment"
+      jsonPointers:
+      - /spec/replicas
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
@@ -69,6 +74,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true
     retry:
       limit: 5
       backoff:
