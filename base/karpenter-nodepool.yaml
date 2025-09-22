@@ -28,10 +28,6 @@ spec:
           values: ["arm64", "amd64"]
           minValues: 1
           
-        # Linux OS
-        - key: kubernetes.io/os
-          operator: In
-          values: ["linux"]
           
         # Support both spot and on-demand with spot preference
         - key: karpenter.sh/capacity-type
@@ -56,8 +52,12 @@ spec:
         # Ensure sufficient memory capacity per node (>= 2Gi)
         - key: karpenter.k8s.aws/instance-memory
           operator: Gt
+          values: ["1000"]
+
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Gt
           values: ["1"]
-          
+
       # Startup taints for K3s initialization
       startupTaints:
         - key: karpenter.sh/unregistered
