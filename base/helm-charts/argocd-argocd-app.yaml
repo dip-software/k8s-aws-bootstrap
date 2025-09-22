@@ -13,8 +13,9 @@ spec:
     targetRevision: "*"
     helm:
       valuesObject:
+        foo: "${AWS_ACCOUNT_ID_STR}"
         global:
-          domain: argocd.${CLUSTER_FQDN}
+          domain: "argocd.${CLUSTER_FQDN}"
           # Enable high availability mode
           ha:
             enabled: false
