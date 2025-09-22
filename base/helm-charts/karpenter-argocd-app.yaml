@@ -48,16 +48,8 @@ spec:
         # Logging configuration
         logLevel: info
         
-        # Node affinity and tolerations - Run only on static-worker nodes
+        # Node affinity and tolerations - Run only on critical addon nodes
         affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-              - matchExpressions:
-                - key: node-type
-                  operator: In
-                  values:
-                  - static-worker
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
@@ -73,10 +65,6 @@ spec:
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
-        - key: node-role.kubernetes.io/static-worker
-          operator: Equal
-          value: "true"
-          effect: NoSchedule
         
         # Security configuration
         securityContext:

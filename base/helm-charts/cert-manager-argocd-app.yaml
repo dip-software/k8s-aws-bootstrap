@@ -23,23 +23,10 @@ spec:
           annotations:
             eks.amazonaws.com/role-arn: ${CERT_MANAGER_ROLE_ARN}
             
-        # Node affinity - Run only on static-worker nodes
-        nodeSelector:
-          node-type: static-worker
+        # Node affinity - Run only on critical addon nodes
         tolerations:
-        - key: node-role.kubernetes.io/static-worker
-          operator: Equal
-          value: "true"
-          effect: NoSchedule
-        affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-              - matchExpressions:
-                - key: node-type
-                  operator: In
-                  values:
-                  - static-worker
+        - key: CriticalAddonsOnly
+          operator: Exists
             
         resources:
           requests:
@@ -51,22 +38,9 @@ spec:
             
         # Configure cainjector with the same node affinity
         cainjector:
-          nodeSelector:
-            node-type: static-worker
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
+          - key: CriticalAddonsOnly
+            operator: Exists
           resources:
             requests:
               cpu: 5m
@@ -77,22 +51,9 @@ spec:
               
         # Configure webhook with the same node affinity
         webhook:
-          nodeSelector:
-            node-type: static-worker
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
+          - key: CriticalAddonsOnly
+            operator: Exists
           resources:
             requests:
               cpu: 5m

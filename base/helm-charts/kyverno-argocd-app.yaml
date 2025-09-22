@@ -18,23 +18,10 @@ spec:
       valuesObject:
         admissionController:
           replicas: 2
-          # Require static-worker nodes for Kyverno admission controller (critical)
-          nodeSelector:
-            node-type: static-worker
+          # Require critical addon nodes for Kyverno admission controller (critical)
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
+          - key: CriticalAddonsOnly
+            operator: Exists
           # Ensure admission controller pods are distributed across availability zones for high availability
           topologySpreadConstraints:
           - maxSkew: 1

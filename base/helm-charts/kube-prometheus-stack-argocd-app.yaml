@@ -15,23 +15,11 @@ spec:
       valuesObject:
         prometheus:
           prometheusSpec:
-            # Require static-worker nodes for Prometheus (critical)
-            nodeSelector:
-              node-type: static-worker
+            # Require critical addon nodes for Prometheus (critical)
             tolerations:
-            - key: node-role.kubernetes.io/static-worker
-              operator: Equal
-              value: "true"
-              effect: NoSchedule
+            - key: CriticalAddonsOnly
+              operator: Exists
             affinity:
-              nodeAffinity:
-                requiredDuringSchedulingIgnoredDuringExecution:
-                  nodeSelectorTerms:
-                  - matchExpressions:
-                    - key: node-type
-                      operator: In
-                      values:
-                      - static-worker
             resources:
               requests:
                 cpu: 15m
@@ -40,23 +28,11 @@ spec:
                 cpu: 200m
                 memory: 682Mi
         grafana:
-          # Require static-worker nodes for Grafana (critical)
-          nodeSelector:
-            node-type: static-worker
+          # Require critical addon nodes for Grafana (critical)
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
+          - key: CriticalAddonsOnly
+            operator: Exists
           affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
           resources:
             requests:
               cpu: 10m
@@ -65,23 +41,11 @@ spec:
               cpu: 100m
               memory: 734Mi
         prometheusOperator:
-          # Require static-worker nodes for Prometheus Operator (critical)
-          nodeSelector:
-            node-type: static-worker
+          # Require critical addon nodes for Prometheus Operator (critical)
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
+          - key: CriticalAddonsOnly
+            operator: Exists
           affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
           resources:
             requests:
               cpu: 5m
@@ -90,23 +54,11 @@ spec:
               cpu: 50m
               memory: 50Mi
         kubeStateMetrics:
-          # Require static-worker nodes for KSM (critical)
-          nodeSelector:
-            node-type: static-worker
+          # Require critical addon nodes for KSM (critical)
           tolerations:
-          - key: node-role.kubernetes.io/static-worker
-            operator: Equal
-            value: "true"
-            effect: NoSchedule
+          - key: CriticalAddonsOnly
+            operator: Exists
           affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-type
-                    operator: In
-                    values:
-                    - static-worker
           resources:
             requests:
               cpu: 5m

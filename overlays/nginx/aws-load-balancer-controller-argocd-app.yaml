@@ -33,21 +33,10 @@ spec:
             memory: 42Mi
         nodeSelector:
           kubernetes.io/os: linux
-          node-type: static-worker
         tolerations:
-        - key: node-role.kubernetes.io/static-worker
-          operator: Equal
-          value: "true"
-          effect: NoSchedule
+        - key: CriticalAddonsOnly
+          operator: Exists
         affinity:
-          nodeAffinity:
-            requiredDuringSchedulingIgnoredDuringExecution:
-              nodeSelectorTerms:
-              - matchExpressions:
-                - key: node-type
-                  operator: In
-                  values:
-                  - static-worker
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100

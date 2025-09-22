@@ -1,16 +1,17 @@
 # Node Scheduling Configuration Guide
 
-This document outlines the node scheduling strategy implemented for this EKS cluster.
+This document outlines the node scheduling strategy implemented for this K3s cluster.
 
 ## Overview
 
-The cluster uses a dual-node approach:
-- **Static Worker Nodes**: Manually provisioned nodes labeled with `node-type: static-worker`
-- **Karpenter Managed Nodes**: Dynamically provisioned nodes labeled with `node-type: karpenter-managed`
+The cluster uses a dual-node approach with K3s standard CriticalAddonsOnly configuration:
+- **Control Plane Nodes**: Hidden from workload scheduling, run K3s control plane components
+- **Critical Addon Worker Nodes**: Dedicated nodes with `CriticalAddonsOnly` taint for infrastructure components
+- **Karpenter Managed Nodes**: Clean worker nodes for application workloads
 
-## Critical Workloads (Static Worker Nodes Only)
+## Critical Workloads (Critical Addon Nodes Only)
 
-These workloads are configured with **required** nodeAffinity to run ONLY on static-worker nodes:
+These workloads are configured with `CriticalAddonsOnly` tolerations to run ONLY on dedicated infrastructure nodes:
 
 1. **Karpenter Controller**
    - Critical for cluster functionality
@@ -53,15 +54,14 @@ These workloads are configured with **required** nodeAffinity to run ONLY on sta
    - Includes Prometheus, Grafana, Prometheus Operator, and kube-state-metrics
    - Configured in: `base/helm-charts/kube-prometheus-stack-argocd-app.yaml`
 
-10. **CoreDNS** (EKS Add-on)
-    - **IMPORTANT**: CoreDNS is typically managed as an EKS add-on
-    - You need to configure the EKS add-on to use nodeSelectors for static-worker nodes
-    - This is not managed by ArgoCD apps in this repository
-    - Configure via AWS EKS Console, CLI, or Terraform/Pulumi
+10. **CoreDNS** (K3s built-in)
+    - **IMPORTANT**: CoreDNS runs automatically on control plane nodes
+    - Uses K3s standard CriticalAddonsOnly scheduling
+    - No additional configuration needed
 
-## Non-Critical Workloads (Prefer Karpenter Nodes)
+## Non-Critical Workloads (Regular Worker Nodes)
 
-These workloads are configured with **preferred** nodeAffinity to run on Karpenter nodes, but can fall back to static nodes:
+These workloads are configured to **avoid** critical addon nodes and run on Karpenter-managed workers:
 
 - Ingress NGINX Controller
 - Crossplane
@@ -75,39 +75,40 @@ These workloads run on ALL nodes and don't need special scheduling:
 
 ## Configuration Validation
 
-### For Static Worker Nodes
-Ensure your static worker nodes are labeled and tainted:
-```bash
-# Label the nodes
-kubectl label nodes <node-name> node-type=static-worker
+### For Critical Addon Worker Nodes
 
-# Taint the nodes to prevent non-critical workloads from scheduling
-kubectl taint nodes <node-name> node-role.kubernetes.io/static-worker=true:NoSchedule
+Ensure your critical addon worker nodes are tainted for critical addons only:
+
+```bash
+# Taint the nodes to allow only critical addons
+kubectl taint nodes <node-name> CriticalAddonsOnly=true:NoExecute
 ```
 
-All critical workloads are configured with the appropriate tolerations to schedule on tainted static-worker nodes.
+All critical workloads are configured with the appropriate `CriticalAddonsOnly` tolerations to schedule on these dedicated nodes.
 
-### For CoreDNS (EKS Add-on)
-Configure the CoreDNS EKS add-on to use nodeSelectors:
-```json
-{
-  "nodeSelector": {
-    "node-type": "static-worker"
-  }
-}
+### For K3s Control Plane
+
+K3s control plane nodes are automatically configured with:
+
+```bash
+# Automatic labels and taints (no manual configuration needed)
+kubectl get nodes -l node-role.kubernetes.io/control-plane
 ```
 
 ## Troubleshooting
 
-### Check Node Labels
+### Check Node Labels and Taints
+
 ```bash
-kubectl get nodes --show-labels | grep node-type
+kubectl get nodes --show-labels | grep -E "CriticalAddonsOnly"
+kubectl describe nodes | grep -A5 -B5 "Taints"
 ```
 
 ### Check Pod Placement
+
 ```bash
-# Critical workloads should be on static-worker nodes
-kubectl get pods -A -o wide --field-selector spec.nodeName!=<static-worker-node>
+# Critical workloads should be on critical addon nodes
+kubectl get pods -A -o wide --field-selector spec.nodeName!=<critical-addon-node>
 
 # Check specific workload placement
 kubectl get pods -n karpenter -o wide
@@ -115,15 +116,16 @@ kubectl get pods -n kube-system -o wide | grep -E "(aws-load-balancer|coredns)"
 kubectl get pods -n cert-manager -o wide
 ```
 
-### Check Karpenter Node Labels
+### Check Karpenter Node Provisioning
+
 ```bash
 kubectl get nodes -l node-type=karpenter-managed
+kubectl get nodeclaims
 ```
 
 ## Next Steps
 
 1. Deploy the configuration using ArgoCD
-2. Manually label your static worker nodes with `node-type=static-worker`
-3. Configure CoreDNS EKS add-on with nodeSelector for static-worker nodes
-4. Verify pod placement after deployment
-5. Monitor Karpenter node provisioning
+2. Manually taint your critical addon worker nodes with `CriticalAddonsOnly=true:NoExecute`
+3. Verify pod placement after deployment
+4. Monitor Karpenter node provisioning

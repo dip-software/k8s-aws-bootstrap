@@ -34,10 +34,8 @@ spec:
               requiredDuringSchedulingIgnoredDuringExecution:
                 nodeSelectorTerms:
                 - matchExpressions:
-                  - key: node-type
-                    operator: NotIn
-                    values:
-                    - static-worker
+                  - key: node-role.kubernetes.io/control-plane
+                    operator: DoesNotExist
           nodeSelector:
             kubernetes.io/os: linux
           service:
