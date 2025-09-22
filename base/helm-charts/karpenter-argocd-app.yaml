@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: oci://public.ecr.aws/karpenter/karpenter
-    targetRevision: 1.7.0
+    targetRevision: 1.7.1
     path: .
     helm:
       valuesObject:
