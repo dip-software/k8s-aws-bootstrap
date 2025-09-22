@@ -214,6 +214,11 @@ spec:
         redis:
           enabled: true
           
+          # Require critical addon nodes for Redis
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          
           # Redis HA configuration
           ha:
             enabled: false
