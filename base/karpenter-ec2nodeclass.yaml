@@ -34,10 +34,7 @@ spec:
         karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
   # Security group selection  
   securityGroupSelectorTerms:
-    # Primary: Select by cluster tag
-    - tags:
-        kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
-    # Fallback: Select by karpenter discovery tag
+    # Select by karpenter discovery tag (more specific)
     - tags:
         karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
         
