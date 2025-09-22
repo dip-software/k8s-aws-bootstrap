@@ -210,6 +210,10 @@ spec:
             serviceMonitor:
               enabled: false
 
+        redisSecretInit:  
+          nodeSelector: {node-type: static-worker}
+          tolerations: [{key: "CriticalAddonsOnly", operator: "Exists"}]
+
         # Configure Redis for caching (used in HA mode)
         redis:
           enabled: true
