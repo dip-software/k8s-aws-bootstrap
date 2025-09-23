@@ -15,7 +15,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-external-dns-aws-role-arn-env-var
@@ -35,7 +35,7 @@ spec:
       cel:
         expressions:
         - expression: >-
-            object.spec.containers.filter(c, c.name == 'external-dns').all(c, 
+            object.spec.containers.exists(c, c.name == 'external-dns' && 
             c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
           message: "External DNS container must have AWS_ROLE_ARN environment variable with non-empty value"
 ---
@@ -55,7 +55,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-external-dns-serviceaccount-name

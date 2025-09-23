@@ -15,7 +15,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-cert-manager-aws-role-arn-env-var
@@ -25,19 +25,19 @@ spec:
           kinds:
           - Pod
           names:
-          - "cert-manager-*"
+          - "cert-manager-cbd*"
           namespaces:
           - cert-manager
     validate:
       message: >-
         Cert-manager controller pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      cel:
-        expressions:
-        - expression: >-
-            object.spec.containers.filter(c, c.name == 'cert-manager-controller').all(c, 
-            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
-          message: "Cert-manager controller container must have AWS_ROLE_ARN environment variable with non-empty value"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.containers[?name=='cert-manager-controller'] | [0].env[?name=='AWS_ROLE_ARN'] | length(@) }}"
+            operator: Equals
+            value: 0
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -55,7 +55,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-cert-manager-serviceaccount-name
@@ -65,13 +65,16 @@ spec:
           kinds:
           - Pod
           names:
-          - "cert-manager-*"
+          - "cert-manager-cbd*"
           namespaces:
           - cert-manager
     validate:
       message: >-
         Cert-manager controller pod must use the 'cert-manager' service account 
         for proper EKS Pod Identity integration.
-      pattern:
-        spec:
-          serviceAccountName: "cert-manager"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.serviceAccountName }}"
+            operator: NotEquals
+            value: "cert-manager"

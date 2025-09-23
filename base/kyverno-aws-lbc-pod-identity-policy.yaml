@@ -15,7 +15,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-aws-role-arn-env-var
@@ -32,12 +32,15 @@ spec:
       message: >-
         AWS Load Balancer Controller pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      cel:
-        expressions:
-        - expression: >-
-            object.spec.containers.filter(c, c.name == 'aws-load-balancer-controller').all(c, 
-            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
-          message: "AWS Load Balancer Controller container must have AWS_ROLE_ARN environment variable with non-empty value"
+      assert:
+        all:
+        - check:
+            spec:
+              serviceAccountName: aws-load-balancer-controller
+        - check:
+            ~.(spec.containers[?name=='aws-load-balancer-controller']): 
+            - env:
+              - name: AWS_ROLE_ARN
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -55,7 +58,7 @@ metadata:
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
-  validationFailureAction: enforce
+  validationFailureAction: Enforce
   background: true
   rules:
   - name: validate-serviceaccount-name
