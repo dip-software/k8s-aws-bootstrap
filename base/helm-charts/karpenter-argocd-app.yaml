@@ -19,9 +19,16 @@ spec:
               cpu: 200m
               memory: 256Mi
         settings:
-          syncPeriod: 0h5m0s
+          # Enable faster sync for quicker node health detection
+          syncPeriod: 0h1m0s
           clusterName: ${CLUSTER_NAME}
           clusterEndpoint: ${CLUSTER_ENDPOINT}
+          # Enable drift detection for automatic node repair
+          featureGates:
+            drift: true
+          # Optimize batching for responsive node health checks
+          batchMaxDuration: 10s
+          batchIdleDuration: 1s
           aws:
             defaultInstanceProfile: ${KARPENTER_INSTANCE_PROFILE}
             region: ${AWS_REGION}

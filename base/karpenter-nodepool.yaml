@@ -65,7 +65,7 @@ spec:
           effect: NoExecute
           
       # Node expiration for security and cost management
-      expireAfter: 720h # 30 days
+      expireAfter: 360h # 15 days
       
       # Termination grace period
       terminationGracePeriod: 48h
