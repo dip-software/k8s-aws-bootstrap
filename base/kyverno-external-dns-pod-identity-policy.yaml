@@ -30,6 +30,7 @@ spec:
           - external-dns
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >-
         External DNS pod must have AWS_ROLE_ARN environment variable 
@@ -72,6 +73,7 @@ spec:
           - external-dns
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >
         External DNS pod must use the 'external-dns' service account 

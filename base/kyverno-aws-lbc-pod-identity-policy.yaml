@@ -30,6 +30,7 @@ spec:
           - kube-system
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >-
         AWS Load Balancer Controller pod must have AWS_ROLE_ARN environment variable 
@@ -72,6 +73,7 @@ spec:
           - kube-system
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >-
         AWS Load Balancer Controller pod must use the 'aws-load-balancer-controller' 

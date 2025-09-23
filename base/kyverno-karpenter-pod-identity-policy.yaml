@@ -30,6 +30,7 @@ spec:
           - karpenter
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >-
         Karpenter controller pod must have AWS_ROLE_ARN environment variable 
@@ -72,6 +73,7 @@ spec:
           - karpenter
           operations:
           - CREATE
+          - UPDATE
     validate:
       message: >-
         Karpenter controller pod must use the 'karpenter' service account 
