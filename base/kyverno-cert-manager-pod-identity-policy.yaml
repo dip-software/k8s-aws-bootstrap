@@ -32,13 +32,12 @@ spec:
       message: >-
         Cert-manager controller pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      pattern:
-        spec:
-          containers:
-          - name: "cert-manager-controller"
-            env:
-            - name: "AWS_ROLE_ARN"
-              value: "?*"
+      cel:
+        expressions:
+        - expression: >-
+            object.spec.containers.filter(c, c.name == 'cert-manager-controller').all(c, 
+            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
+          message: "Cert-manager controller container must have AWS_ROLE_ARN environment variable with non-empty value"
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
