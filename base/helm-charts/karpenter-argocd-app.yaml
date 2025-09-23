@@ -34,9 +34,9 @@ spec:
             region: ${AWS_REGION}
             vpcId: ${AWS_VPC_ID}
             subnetSelector:
-              kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
+              karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
             securityGroupSelector:
-              kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
+              karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
         # Replica count for high availability
         replicas: 2
         

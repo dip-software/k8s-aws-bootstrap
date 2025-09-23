@@ -23,13 +23,9 @@ spec:
   # Instance profile (pre-created for K3s)
   instanceProfile: ${KARPENTER_INSTANCE_PROFILE}
   
-  # Subnet selection - prefer private subnets for worker nodes
+  # Subnet selection - use karpenter discovery tags to avoid kubernetes.io restrictions
   subnetSelectorTerms:
-    # Primary: Select private subnets by role tag
-    - tags:
-        kubernetes.io/cluster/${CLUSTER_NAME}: "shared"
-        kubernetes.io/role/internal-elb: "1"
-    # Fallback: Select by karpenter discovery tag
+    # Select by karpenter discovery tag only
     - tags:
         karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
   # Security group selection  
