@@ -52,8 +52,8 @@ spec:
           enabled: true
           port: 8443
         
-        # Logging configuration
-        logLevel: info
+        # Logging configuration - Enable debug logging for detailed troubleshooting
+        logLevel: debug
         
         # Node affinity and tolerations - Run only on critical addon nodes
         affinity:
