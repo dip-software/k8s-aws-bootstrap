@@ -23,7 +23,8 @@ spec:
           annotations:
             eks.amazonaws.com/role-arn: ${CERT_MANAGER_ROLE_ARN}
             
-        # Node affinity - Run only on critical addon nodes
+        # Node placement - Run on system nodes like ArgoCD
+        nodeSelector: {node-type: system}
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -36,8 +37,9 @@ spec:
             cpu: 50m
             memory: 80Mi
             
-        # Configure cainjector with the same node affinity
+        # Configure cainjector with the same node placement
         cainjector:
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -49,8 +51,9 @@ spec:
               cpu: 50m
               memory: 116Mi
               
-        # Configure webhook with the same node affinity
+        # Configure webhook with the same node placement
         webhook:
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
