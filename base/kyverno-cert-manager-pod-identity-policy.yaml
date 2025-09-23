@@ -28,6 +28,8 @@ spec:
           - "cert-manager-*"
           namespaces:
           - cert-manager
+          operations:
+          - CREATE
     validate:
       message: >-
         Cert-manager controller pod must have AWS_ROLE_ARN environment variable 
@@ -68,6 +70,8 @@ spec:
           - "cert-manager-*"
           namespaces:
           - cert-manager
+          operations:
+          - CREATE
     validate:
       message: >-
         Cert-manager controller pod must use the 'cert-manager' service account 
