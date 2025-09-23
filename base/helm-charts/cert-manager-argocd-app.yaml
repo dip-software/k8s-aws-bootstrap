@@ -34,7 +34,7 @@ spec:
             memory: 25Mi
           limits:
             cpu: 50m
-            memory: 50Mi
+            memory: 80Mi
             
         # Configure cainjector with the same node affinity
         cainjector:
@@ -47,7 +47,7 @@ spec:
               memory: 35Mi
             limits:
               cpu: 50m
-              memory: 70Mi
+              memory: 100Mi
               
         # Configure webhook with the same node affinity
         webhook:
