@@ -28,16 +28,18 @@ spec:
           - "ebs-csi-controller-*"
           namespaces:
           - kube-system
+          operations:
+          - CREATE
     validate:
       message: >-
         EBS CSI Controller pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      cel:
-        expressions:
-        - expression: >-
-            object.spec.containers.exists(c, c.name == 'ebs-plugin' && 
-            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
-          message: "EBS CSI Controller container must have AWS_ROLE_ARN environment variable with non-empty value"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.containers[?name=='ebs-plugin'] | [0].env || `[]` | [?name=='AWS_ROLE_ARN'] | length(@) }}"
+            operator: Equals
+            value: 0
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -68,10 +70,15 @@ spec:
           - "ebs-csi-controller-*"
           namespaces:
           - kube-system
+          operations:
+          - CREATE
     validate:
-      message: >-
+      message: >
         EBS CSI Controller pod must use the 'aws-ebs-csi-driver' service account 
         for proper EKS Pod Identity integration.
-      pattern:
-        spec:
-          serviceAccountName: "aws-ebs-csi-driver"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.serviceAccountName }}"
+            operator: NotEquals
+            value: "aws-ebs-csi-driver"
