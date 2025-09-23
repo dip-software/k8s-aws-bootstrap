@@ -32,12 +32,12 @@ spec:
       message: >-
         Karpenter controller pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      cel:
-        expressions:
-        - expression: >-
-            request.object.spec.containers.exists(c, c.name == 'controller' && 
-            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
-          message: "Karpenter controller container must have AWS_ROLE_ARN environment variable with non-empty value"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.containers[?name=='controller'] | [0].env[?name=='AWS_ROLE_ARN'] | length(@) }}"
+            operator: Equals
+            value: 0
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
