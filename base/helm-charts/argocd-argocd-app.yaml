@@ -49,6 +49,7 @@ spec:
               memory: 128Mi
           
           # Anti-affinity to spread replicas across nodes and require critical addon nodes
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -88,6 +89,7 @@ spec:
               cpu: 100m
               memory: 128Mi
           
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -193,6 +195,7 @@ spec:
           replicas: 1  # Can be increased for larger clusters
           
           # Require critical addon nodes for ArgoCD controller
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -212,7 +215,7 @@ spec:
               enabled: false
 
         redisSecretInit:  
-          nodeSelector: {node-type: static-worker}
+          nodeSelector: {node-type: system}
           tolerations: [{key: "CriticalAddonsOnly", operator: "Exists"}]
 
         # Configure Redis for caching (used in HA mode)
@@ -220,6 +223,7 @@ spec:
           enabled: true
           
           # Require critical addon nodes for Redis
+          nodeSelector: {node-type: system}
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
