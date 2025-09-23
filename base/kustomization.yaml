@@ -7,3 +7,4 @@ resources:
   - karpenter-ec2nodeclass.yaml
   - karpenter-nodepool.yaml
   - kyverno-aws-lbc-pod-identity-policy.yaml
+  - kyverno-cert-manager-pod-identity-policy.yaml
