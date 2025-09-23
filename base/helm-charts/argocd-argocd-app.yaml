@@ -235,14 +235,26 @@ spec:
         # Configure Dex for OIDC (if using external OIDC)
         dex:
           enabled: false  # Enable if you need Dex for OIDC
+          nodeSelector: {node-type: system}
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
 
         # Notifications controller (optional)
         notifications:
           enabled: true
+          nodeSelector: {node-type: system}
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
 
         # ApplicationSet controller
         applicationSet:
           enabled: true
+          nodeSelector: {node-type: system}
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
 
   destination:
     server: https://kubernetes.default.svc
