@@ -20,15 +20,8 @@ spec:
         kind: EC2NodeClass
         name: default
         
-      # Node requirements with ARM64 preference and spot support
+      # Node requirements for spot support and instance selection
       requirements:
-        # Prefer ARM64 architecture
-        - key: kubernetes.io/arch
-          operator: In
-          values: ["arm64", "amd64"]
-          minValues: 1
-          
-          
         # Support both spot and on-demand with spot preference
         - key: karpenter.sh/capacity-type
           operator: In
