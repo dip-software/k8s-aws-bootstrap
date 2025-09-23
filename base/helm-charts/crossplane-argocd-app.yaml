@@ -13,15 +13,9 @@ spec:
     targetRevision: "v2.0.0"
     helm:
       valuesObject:
-        # Prefer regular worker nodes for Crossplane
-        affinity:
-          nodeAffinity:
-            preferredDuringSchedulingIgnoredDuringExecution:
-            - weight: 100
-              preference:
-                matchExpressions:
-                - key: node-role.kubernetes.io/control-plane
-                  operator: DoesNotExist
+        # Run on Karpenter-managed nodes
+        nodeSelector:
+          node-type: karpenter-managed
         metrics:
           enabled: true
   destination:

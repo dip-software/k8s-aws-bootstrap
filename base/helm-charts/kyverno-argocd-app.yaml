@@ -18,7 +18,9 @@ spec:
       valuesObject:
         admissionController:
           replicas: 2
-          # Require critical addon nodes for Kyverno admission controller (critical)
+          # Run admission controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -30,6 +32,17 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: admission-controller
+        
+        # Run background controllers on Karpenter-managed nodes
+        backgroundController:
+          nodeSelector:
+            node-type: karpenter-managed
+        cleanupController:
+          nodeSelector:
+            node-type: karpenter-managed
+        reportsController:
+          nodeSelector:
+            node-type: karpenter-managed
   syncPolicy:
     automated:
       prune: true

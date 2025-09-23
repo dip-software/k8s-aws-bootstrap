@@ -15,7 +15,9 @@ spec:
       valuesObject:
         prometheus:
           prometheusSpec:
-            # Require critical addon nodes for Prometheus (critical)
+            # Run on system nodes (critical component)
+            nodeSelector:
+              node-type: system
             tolerations:
             - key: CriticalAddonsOnly
               operator: Exists
@@ -28,7 +30,9 @@ spec:
                 cpu: 200m
                 memory: 682Mi
         grafana:
-          # Require critical addon nodes for Grafana (critical)
+          # Run on system nodes (critical component)
+          nodeSelector:
+            node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -41,7 +45,9 @@ spec:
               cpu: 100m
               memory: 734Mi
         prometheusOperator:
-          # Require critical addon nodes for Prometheus Operator (critical)
+          # Run on system nodes (critical component)
+          nodeSelector:
+            node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -54,7 +60,9 @@ spec:
               cpu: 50m
               memory: 50Mi
         kubeStateMetrics:
-          # Require critical addon nodes for KSM (critical)
+          # Run on system nodes (critical component)
+          nodeSelector:
+            node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
