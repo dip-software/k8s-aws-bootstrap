@@ -32,17 +32,6 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: admission-controller
-        
-        # Run background controllers on Karpenter-managed nodes
-        backgroundController:
-          nodeSelector:
-            node-type: karpenter-managed
-        cleanupController:
-          nodeSelector:
-            node-type: karpenter-managed
-        reportsController:
-          nodeSelector:
-            node-type: karpenter-managed
   syncPolicy:
     automated:
       prune: true

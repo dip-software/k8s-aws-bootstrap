@@ -13,9 +13,6 @@ spec:
     targetRevision: "v2.0.0"
     helm:
       valuesObject:
-        # Run on Karpenter-managed nodes
-        nodeSelector:
-          node-type: karpenter-managed
         metrics:
           enabled: true
   destination:
