@@ -35,7 +35,7 @@ spec:
       cel:
         expressions:
         - expression: >-
-            object.spec.containers.exists(c, c.name == 'controller' && 
+            request.object.spec.containers.exists(c, c.name == 'controller' && 
             c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
           message: "Karpenter controller container must have AWS_ROLE_ARN environment variable with non-empty value"
 ---
