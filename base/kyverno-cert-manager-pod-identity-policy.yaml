@@ -25,7 +25,7 @@ spec:
           kinds:
           - Pod
           names:
-          - "cert-manager-cbd*"
+          - "cert-manager-*"
           namespaces:
           - cert-manager
     validate:
@@ -65,7 +65,7 @@ spec:
           kinds:
           - Pod
           names:
-          - "cert-manager-cbd*"
+          - "cert-manager-*"
           namespaces:
           - cert-manager
     validate:
