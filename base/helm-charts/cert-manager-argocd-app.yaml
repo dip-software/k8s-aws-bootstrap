@@ -44,10 +44,10 @@ spec:
           resources:
             requests:
               cpu: 5m
-              memory: 35Mi
+              memory: 58Mi
             limits:
               cpu: 50m
-              memory: 100Mi
+              memory: 116Mi
               
         # Configure webhook with the same node affinity
         webhook:
@@ -57,10 +57,10 @@ spec:
           resources:
             requests:
               cpu: 5m
-              memory: 11Mi
+              memory: 20Mi
             limits:
               cpu: 50m
-              memory: 22Mi
+              memory: 40Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
