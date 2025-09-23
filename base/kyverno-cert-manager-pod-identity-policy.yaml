@@ -37,7 +37,10 @@ spec:
       deny:
         conditions:
           all:
-          - key: "{{ request.object.spec.containers[?name=='cert-manager-controller'] | [0].env[?name=='AWS_ROLE_ARN'] | length(@) }}"
+          - key: "{{ request.object.spec.containers[?name=='cert-manager-controller'] | length(@) }}"
+            operator: GreaterThan
+            value: 0
+          - key: "{{ request.object.spec.containers[?name=='cert-manager-controller'] | [0].env || `[]` | [?name=='AWS_ROLE_ARN'] | length(@) }}"
             operator: Equals
             value: 0
 ---
@@ -79,6 +82,9 @@ spec:
       deny:
         conditions:
           all:
+          - key: "{{ request.object.spec.containers[?name=='cert-manager-controller'] | length(@) }}"
+            operator: GreaterThan
+            value: 0
           - key: "{{ request.object.spec.serviceAccountName }}"
             operator: NotEquals
             value: "cert-manager"
