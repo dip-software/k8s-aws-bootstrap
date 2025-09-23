@@ -28,16 +28,18 @@ spec:
           - "external-dns-*"
           namespaces:
           - external-dns
+          operations:
+          - CREATE
     validate:
       message: >-
         External DNS pod must have AWS_ROLE_ARN environment variable 
         injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
-      cel:
-        expressions:
-        - expression: >-
-            object.spec.containers.exists(c, c.name == 'external-dns' && 
-            c.env.exists(e, e.name == 'AWS_ROLE_ARN' && size(e.value) > 0))
-          message: "External DNS container must have AWS_ROLE_ARN environment variable with non-empty value"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.containers[?name=='external-dns'] | [0].env || `[]` | [?name=='AWS_ROLE_ARN'] | length(@) }}"
+            operator: Equals
+            value: 0
 ---
 apiVersion: kyverno.io/v1
 kind: ClusterPolicy
@@ -68,10 +70,15 @@ spec:
           - "external-dns-*"
           namespaces:
           - external-dns
+          operations:
+          - CREATE
     validate:
-      message: >-
+      message: >
         External DNS pod must use the 'external-dns' service account 
         for proper EKS Pod Identity integration.
-      pattern:
-        spec:
-          serviceAccountName: "external-dns"
+      deny:
+        conditions:
+          all:
+          - key: "{{ request.object.spec.serviceAccountName }}"
+            operator: NotEquals
+            value: "external-dns"
