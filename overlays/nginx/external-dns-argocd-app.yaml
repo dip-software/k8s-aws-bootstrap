@@ -16,6 +16,8 @@ spec:
     helm:
       valuesObject:
         # Require critical addon nodes for external-dns (critical)
+        nodeSelector:
+          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists

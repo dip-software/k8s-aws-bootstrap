@@ -32,7 +32,7 @@ spec:
             cpu: 5m
             memory: 42Mi
         nodeSelector:
-          kubernetes.io/os: linux
+          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists

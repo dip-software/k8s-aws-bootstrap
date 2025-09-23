@@ -29,15 +29,12 @@ spec:
             requests:
               cpu: 10m
               memory: 36Mi
-          affinity:
-            nodeAffinity:
-              requiredDuringSchedulingIgnoredDuringExecution:
-                nodeSelectorTerms:
-                - matchExpressions:
-                  - key: node-role.kubernetes.io/control-plane
-                    operator: DoesNotExist
           nodeSelector:
-            kubernetes.io/os: linux
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          affinity:
           service:
             type: LoadBalancer
             annotations:
