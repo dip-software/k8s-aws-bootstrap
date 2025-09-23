@@ -6,3 +6,4 @@ resources:
   - letsencrypt-cert-issuer.yaml
   - karpenter-ec2nodeclass.yaml
   - karpenter-nodepool.yaml
+  - kyverno-aws-lbc-pod-identity-policy.yaml
