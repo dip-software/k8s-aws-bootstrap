@@ -33,8 +33,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Cert-manager controller pod must have AWS_ROLE_ARN environment variable 
-        injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
+        Cert-manager controller pod must have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. Verify the webhook is running and retry the deployment.
       deny:
         conditions:
           all:
@@ -79,8 +78,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Cert-manager controller pod must use the 'cert-manager' service account 
-        for proper EKS Pod Identity integration.
+        Cert-manager controller pod must use ServiceAccount 'cert-manager' in namespace 'cert-manager' so Pod Identity can supply AWS credentials.
       deny:
         conditions:
           all:

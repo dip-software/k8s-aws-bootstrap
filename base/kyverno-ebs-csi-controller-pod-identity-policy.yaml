@@ -33,8 +33,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        EBS CSI Controller pod must have AWS_ROLE_ARN environment variable 
-        injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
+        EBS CSI Controller pod must have AWS_ROLE_ARN injected into container 'ebs-plugin' by the EKS Pod Identity webhook. Verify the webhook deployment and restart the controller pod if credentials are absent.
       deny:
         conditions:
           all:
@@ -76,8 +75,7 @@ spec:
           - UPDATE
     validate:
       message: >
-        EBS CSI Controller pod must use the 'aws-ebs-csi-driver' service account 
-        for proper EKS Pod Identity integration.
+        EBS CSI Controller pod must run with ServiceAccount 'aws-ebs-csi-driver' in namespace 'kube-system' so Pod Identity can assume the correct AWS IAM role.
       deny:
         conditions:
           all:

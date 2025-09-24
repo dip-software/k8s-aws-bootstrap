@@ -33,8 +33,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        AWS Load Balancer Controller pod must have AWS_ROLE_ARN environment variable 
-        injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
+        AWS Load Balancer Controller pod must have AWS_ROLE_ARN injected into container 'aws-load-balancer-controller' by the EKS Pod Identity webhook. Ensure the webhook is healthy and rerun the rollout.
       deny:
         conditions:
           all:
@@ -76,8 +75,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        AWS Load Balancer Controller pod must use the 'aws-load-balancer-controller' 
-        service account for proper EKS Pod Identity integration.
+        AWS Load Balancer Controller pod must run with ServiceAccount 'aws-load-balancer-controller' in namespace 'kube-system' so Pod Identity can provide AWS credentials.
       deny:
         conditions:
           all:

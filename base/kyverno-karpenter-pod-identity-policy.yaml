@@ -33,8 +33,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Karpenter controller pod must have AWS_ROLE_ARN environment variable 
-        injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
+        Karpenter controller pod must have AWS_ROLE_ARN injected into container 'controller' by the EKS Pod Identity webhook. Confirm the webhook is healthy and redeploy the controller if needed.
       deny:
         conditions:
           all:
@@ -76,8 +75,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Karpenter controller pod must use the 'karpenter' service account 
-        for proper EKS Pod Identity integration.
+        Karpenter controller pod must run with ServiceAccount 'karpenter' in namespace 'karpenter' so Pod Identity can project AWS credentials.
       pattern:
         spec:
           serviceAccountName: "karpenter"

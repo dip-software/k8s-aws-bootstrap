@@ -33,8 +33,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        External DNS pod must have AWS_ROLE_ARN environment variable 
-        injected by EKS Pod Identity webhook. Pod will be rejected to allow webhook retry.
+        External DNS pod must have AWS_ROLE_ARN injected into container 'external-dns' by the EKS Pod Identity webhook. Check the webhook status and restart the pod if credentials are missing.
       deny:
         conditions:
           all:
@@ -76,8 +75,7 @@ spec:
           - UPDATE
     validate:
       message: >
-        External DNS pod must use the 'external-dns' service account 
-        for proper EKS Pod Identity integration.
+        External DNS pod must run with ServiceAccount 'external-dns' in namespace 'external-dns' so Pod Identity can assume the required AWS IAM role.
       deny:
         conditions:
           all:
