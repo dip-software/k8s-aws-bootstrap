@@ -15,6 +15,7 @@ spec:
       valuesObject: 
         replicaCount: 2
         # Require critical addon nodes for pod identity webhook (critical)
+        nodeSelector: {node-type: system}
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
