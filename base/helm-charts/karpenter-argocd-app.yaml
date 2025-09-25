@@ -55,7 +55,8 @@ spec:
         # Logging configuration - Enable debug logging for detailed troubleshooting
         logLevel: debug
         
-        # Node affinity and tolerations - Run only on critical addon nodes
+        # Node affinity and tolerations - Run only on system nodes
+        nodeSelector: {node-type: system}
         affinity:
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
