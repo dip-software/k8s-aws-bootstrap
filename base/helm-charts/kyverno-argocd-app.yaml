@@ -80,6 +80,20 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: reports-controller
+        # CRD migration and webhook cleanup jobs
+        crds:
+          migration:
+            nodeSelector:
+              node-type: system
+            tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
+        webhooksCleanup:
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
   syncPolicy:
     automated:
       prune: true
