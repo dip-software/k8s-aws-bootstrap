@@ -16,7 +16,7 @@ rules:
 # Karpenter NodePool and NodeClaim management
 - apiGroups: ["karpenter.sh"]
   resources: ["nodepools", "nodeclaims"]
-  verbs: ["get", "list", "patch", "delete"]
+  verbs: ["get", "list", "patch", "delete", "watch"]
 # Node listing for verification
 - apiGroups: [""]
   resources: ["nodes"]
