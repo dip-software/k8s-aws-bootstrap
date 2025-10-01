@@ -64,7 +64,7 @@ spec:
       - name: restarter
         image: registry.k8s.io/kubectl:v1.32.0
         command:
-        - /bin/bash
+        - /bin/sh
         - -c
         - |
           set -e
