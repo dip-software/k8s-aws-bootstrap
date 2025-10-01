@@ -62,7 +62,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: restarter
-        image: bitnami/kubectl:latest
+        image: registry.k8s.io/kubectl:v1.32.0
         command:
         - /bin/bash
         - -c
