@@ -62,9 +62,9 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: restarter
-        image: registry.k8s.io/kubectl:v1.32.0
+        image: alpine/k8s:1.32.0
         command:
-        - /bin/sh
+        - sh
         - -c
         - |
           set -e
