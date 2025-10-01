@@ -32,6 +32,54 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: admission-controller
+        backgroundController:
+          replicas: 2
+          # Run background controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure background controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: background-controller
+        cleanupController:
+          replicas: 2
+          # Run cleanup controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure cleanup controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: cleanup-controller
+        reportsController:
+          replicas: 2
+          # Run reports controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure reports controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: reports-controller
   syncPolicy:
     automated:
       prune: true
