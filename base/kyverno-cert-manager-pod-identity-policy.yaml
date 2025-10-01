@@ -11,7 +11,8 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures that cert-manager controller pods have the AWS_ROLE_ARN 
       environment variable injected by the EKS Pod Identity webhook. If the environment 
-      variable is missing, the pod is rejected, allowing the webhook to retry the mutation.
+      variable is missing, the pod is rejected. The webhook has failurePolicy: Ignore, 
+      so cert-manager will retry until the webhook is healthy and can inject credentials.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
@@ -33,7 +34,8 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Cert-manager controller pod must have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. Verify the webhook is running and retry the deployment.
+        Cert-manager controller pod must have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. 
+        Verify the webhook is running and healthy. The deployment will retry automatically.
       deny:
         conditions:
           all:

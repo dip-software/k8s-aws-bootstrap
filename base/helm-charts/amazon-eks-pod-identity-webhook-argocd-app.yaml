@@ -4,7 +4,7 @@ metadata:
   name: amazon-eks-pod-identity-webhook
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   source:
@@ -28,6 +28,11 @@ spec:
         image:
           registry: public.ecr.aws
           repository: eks/amazon-eks-pod-identity-webhook
+        # Disable cert-manager integration to break circular dependency
+        # cert-manager needs the webhook, but webhook would need cert-manager
+        pki:
+          certManager:
+            enabled: false
   destination:
     server: https://kubernetes.default.svc
     namespace: kube-system
