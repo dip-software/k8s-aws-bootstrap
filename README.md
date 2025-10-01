@@ -4,7 +4,33 @@ This project provides a baseline configuration for dev clusters.
 
 ## Clean Cluster Destruction
 
-To cleanly destroy a bootstrapped cluster, follow these steps in order to prevent resource leaks and ensure proper cleanup:
+To cleanly destroy a bootstrapped cluster, follow these steps in order to prevent resource leaks and ensure proper cleanup.
+
+### Automated Cleanup (Recommended)
+
+Use the automated cleanup job that executes all steps sequentially:
+
+```bash
+kubectl apply -f base/cluster-cleanup-job.yaml
+```
+
+Monitor the job progress:
+
+```bash
+kubectl logs -n argocd job/cluster-cleanup -f
+```
+
+Check job completion status:
+
+```bash
+kubectl get job cluster-cleanup -n argocd
+```
+
+Once the job completes successfully, proceed with infrastructure destruction using Pulumi.
+
+### Manual Cleanup Steps
+
+Alternatively, you can execute the cleanup steps manually:
 
 ### 1. Stop Bootstrap ArgoCD App Auto-Sync
 

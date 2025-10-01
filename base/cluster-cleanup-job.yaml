@@ -1,0 +1,228 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cluster-cleanup
+  namespace: argocd
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cluster-cleanup
+rules:
+# ArgoCD Application management
+- apiGroups: ["argoproj.io"]
+  resources: ["applications"]
+  verbs: ["get", "list", "patch", "update"]
+# Karpenter NodePool and NodeClaim management
+- apiGroups: ["karpenter.sh"]
+  resources: ["nodepools", "nodeclaims"]
+  verbs: ["get", "list", "patch", "delete"]
+# Node listing for verification
+- apiGroups: [""]
+  resources: ["nodes"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cluster-cleanup
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-cleanup
+subjects:
+- kind: ServiceAccount
+  name: cluster-cleanup
+  namespace: argocd
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cluster-cleanup
+  namespace: argocd
+spec:
+  ttlSecondsAfterFinished: 3600  # Keep job for 1 hour after completion
+  backoffLimit: 3
+  template:
+    metadata:
+      name: cluster-cleanup
+    spec:
+      serviceAccountName: cluster-cleanup
+      restartPolicy: OnFailure
+      containers:
+      - name: cleanup
+        image: alpine/k8s:1.32.0
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          
+          echo "=========================================="
+          echo "Starting Cluster Cleanup Process"
+          echo "=========================================="
+          echo ""
+          
+          # Step 1: Stop Bootstrap ArgoCD App Auto-Sync
+          echo "Step 1: Disabling auto-sync for bootstrap application..."
+          if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
+            kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
+            echo "✅ Auto-sync disabled for bootstrap application"
+          else
+            echo "⚠️  Bootstrap application not found, skipping..."
+          fi
+          echo ""
+          
+          # Step 2: Switch Bootstrap App to Base Kustomize Root
+          echo "Step 2: Switching bootstrap app to base kustomize root..."
+          if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
+            # Get current source path
+            CURRENT_PATH=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.source.path}')
+            echo "Current path: ${CURRENT_PATH}"
+            
+            # Only patch if not already at root
+            if [ "${CURRENT_PATH}" != "." ]; then
+              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"."}}}'
+              echo "✅ Bootstrap app source path changed to '.'"
+              
+              # Trigger manual sync
+              echo "Triggering manual sync..."
+              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD"}}}'
+              
+              # Wait for sync to complete
+              echo "Waiting for sync to complete..."
+              for i in $(seq 1 60); do
+                SYNC_STATUS=$(kubectl get application bootstrap -n argocd -o jsonpath='{.status.sync.status}')
+                HEALTH_STATUS=$(kubectl get application bootstrap -n argocd -o jsonpath='{.status.health.status}')
+                echo "Sync: ${SYNC_STATUS}, Health: ${HEALTH_STATUS}"
+                
+                if [ "${SYNC_STATUS}" = "Synced" ]; then
+                  echo "✅ Bootstrap app synced successfully"
+                  break
+                fi
+                
+                if [ $i -eq 60 ]; then
+                  echo "⚠️  Sync did not complete within timeout, continuing..."
+                fi
+                
+                sleep 5
+              done
+            else
+              echo "✅ Bootstrap app already at base path"
+            fi
+          else
+            echo "⚠️  Bootstrap application not found, skipping..."
+          fi
+          echo ""
+          
+          # Step 3: Patch Karpenter NodePool to Zero CPU
+          echo "Step 3: Patching Karpenter NodePool to zero CPU..."
+          if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
+            kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
+            
+            # Verify the patch
+            CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
+            echo "✅ NodePool CPU limit set to: ${CPU_LIMIT}"
+          else
+            echo "⚠️  NodePool 'default' not found in karpenter namespace, skipping..."
+          fi
+          echo ""
+          
+          # Step 4: Remove All NodeClaims
+          echo "Step 4: Removing all NodeClaims..."
+          
+          # Check if any nodeclaims exist
+          NODECLAIM_COUNT=$(kubectl get nodeclaims -n karpenter --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          
+          if [ "${NODECLAIM_COUNT}" -gt 0 ]; then
+            echo "Found ${NODECLAIM_COUNT} nodeclaim(s) to delete:"
+            kubectl get nodeclaims -n karpenter -o custom-columns=NAME:.metadata.name,NODE:.status.nodeName,AGE:.metadata.creationTimestamp
+            echo ""
+            
+            echo "Deleting all nodeclaims..."
+            kubectl delete nodeclaims --all -n karpenter
+            
+            echo "Waiting for nodeclaims to be fully removed (timeout: 10 minutes)..."
+            kubectl wait --for=delete nodeclaims --all -n karpenter --timeout=10m || true
+            
+            # Verify deletion
+            REMAINING=$(kubectl get nodeclaims -n karpenter --no-headers 2>/dev/null | wc -l | tr -d ' ')
+            if [ "${REMAINING}" -eq 0 ]; then
+              echo "✅ All nodeclaims removed successfully"
+            else
+              echo "⚠️  ${REMAINING} nodeclaim(s) still remaining"
+              kubectl get nodeclaims -n karpenter
+            fi
+          else
+            echo "✅ No nodeclaims found, nothing to delete"
+          fi
+          echo ""
+          
+          # Step 5: Verify Cleanup
+          echo "=========================================="
+          echo "Step 5: Verification"
+          echo "=========================================="
+          echo ""
+          
+          echo "Checking for remaining nodeclaims..."
+          NODECLAIM_COUNT=$(kubectl get nodeclaims -n karpenter --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${NODECLAIM_COUNT}" -eq 0 ]; then
+            echo "✅ No nodeclaims remaining"
+          else
+            echo "⚠️  ${NODECLAIM_COUNT} nodeclaim(s) still present:"
+            kubectl get nodeclaims -n karpenter
+          fi
+          echo ""
+          
+          echo "Checking for Karpenter-managed nodes..."
+          KARPENTER_NODES=$(kubectl get nodes -l node-type=karpenter-managed --no-headers 2>/dev/null | wc -l | tr -d ' ')
+          if [ "${KARPENTER_NODES}" -eq 0 ]; then
+            echo "✅ No Karpenter-managed nodes remaining"
+          else
+            echo "⚠️  ${KARPENTER_NODES} Karpenter-managed node(s) still present:"
+            kubectl get nodes -l node-type=karpenter-managed
+          fi
+          echo ""
+          
+          echo "Checking NodePool CPU limit..."
+          if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
+            CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
+            if [ "${CPU_LIMIT}" = "0" ]; then
+              echo "✅ NodePool CPU limit is 0"
+            else
+              echo "⚠️  NodePool CPU limit is ${CPU_LIMIT} (expected: 0)"
+            fi
+          fi
+          echo ""
+          
+          echo "Checking bootstrap app auto-sync status..."
+          if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
+            AUTO_SYNC=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.syncPolicy.automated}')
+            if [ -z "${AUTO_SYNC}" ] || [ "${AUTO_SYNC}" = "null" ]; then
+              echo "✅ Bootstrap app auto-sync is disabled"
+            else
+              echo "⚠️  Bootstrap app auto-sync is still enabled"
+            fi
+          fi
+          echo ""
+          
+          # Final Summary
+          echo "=========================================="
+          echo "Cleanup Process Complete"
+          echo "=========================================="
+          echo ""
+          echo "Summary:"
+          echo "  - Auto-sync: Disabled"
+          echo "  - Bootstrap path: Switched to base"
+          echo "  - NodePool CPU limit: 0"
+          echo "  - NodeClaims: ${NODECLAIM_COUNT} remaining"
+          echo "  - Karpenter nodes: ${KARPENTER_NODES} remaining"
+          echo ""
+          
+          if [ "${NODECLAIM_COUNT}" -eq 0 ] && [ "${KARPENTER_NODES}" -eq 0 ]; then
+            echo "✅ Cluster is ready for infrastructure destruction"
+            exit 0
+          else
+            echo "⚠️  Some resources still remain. Review the output above."
+            exit 1
+          fi
