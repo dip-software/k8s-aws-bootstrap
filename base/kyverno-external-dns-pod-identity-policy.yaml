@@ -37,6 +37,11 @@ spec:
       deny:
         conditions:
           all:
+          # First verify the external-dns container exists
+          - key: "{{ request.object.spec.containers[?name=='external-dns'] | length(@) }}"
+            operator: GreaterThan
+            value: 0
+          # Then check for AWS_ROLE_ARN environment variable
           - key: "{{ request.object.spec.containers[?name=='external-dns'] | [0].env || `[]` | [?name=='AWS_ROLE_ARN'] | length(@) }}"
             operator: Equals
             value: 0
