@@ -21,9 +21,25 @@ rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
   verbs: ["get", "patch"]
+  resourceNames: ["cert-manager", "cert-manager-webhook", "cert-manager-cainjector"]
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-restarter-kube-system
+  namespace: kube-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get"]
+  resourceNames: ["amazon-eks-pod-identity-webhook"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
@@ -38,6 +54,24 @@ roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: Role
   name: cert-manager-restarter
+subjects:
+- kind: ServiceAccount
+  name: cert-manager-restarter
+  namespace: cert-manager
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-restarter-kube-system
+  namespace: kube-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-restarter-kube-system
 subjects:
 - kind: ServiceAccount
   name: cert-manager-restarter
