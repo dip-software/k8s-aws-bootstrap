@@ -1,0 +1,118 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: cert-manager-restarter
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: cert-manager-restarter
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "patch"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: cert-manager-restarter
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: cert-manager-restarter
+subjects:
+- kind: ServiceAccount
+  name: cert-manager-restarter
+  namespace: cert-manager
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: cert-manager-restarter
+  namespace: cert-manager
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: cert-manager-restarter
+    spec:
+      serviceAccountName: cert-manager-restarter
+      restartPolicy: OnFailure
+      containers:
+      - name: restarter
+        image: bitnami/kubectl:latest
+        command:
+        - /bin/bash
+        - -c
+        - |
+          set -e
+          
+          echo "Waiting for amazon-eks-pod-identity-webhook to be ready..."
+          
+          # Wait for webhook deployment to exist and be ready
+          until kubectl get deployment amazon-eks-pod-identity-webhook -n kube-system 2>/dev/null; do
+            echo "Waiting for webhook deployment to exist..."
+            sleep 5
+          done
+          
+          # Wait for webhook to have at least 1 ready replica
+          until [ "$(kubectl get deployment amazon-eks-pod-identity-webhook -n kube-system -o jsonpath='{.status.readyReplicas}')" -ge 1 ]; do
+            echo "Waiting for webhook to have ready replicas..."
+            sleep 5
+          done
+          
+          echo "Webhook is ready. Checking if cert-manager needs restart..."
+          
+          # Check if cert-manager pods already have AWS_ROLE_ARN
+          if kubectl get pods -n cert-manager -l app.kubernetes.io/name=cert-manager -o jsonpath='{.items[0].spec.containers[0].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+            echo "cert-manager already has AWS_ROLE_ARN injected. No restart needed."
+            exit 0
+          fi
+          
+          echo "cert-manager does not have AWS_ROLE_ARN. Restarting deployments..."
+          
+          # Restart cert-manager deployments to get Pod Identity injected
+          kubectl rollout restart deployment cert-manager -n cert-manager
+          kubectl rollout restart deployment cert-manager-webhook -n cert-manager
+          kubectl rollout restart deployment cert-manager-cainjector -n cert-manager
+          
+          echo "Waiting for cert-manager rollout to complete..."
+          kubectl rollout status deployment cert-manager -n cert-manager --timeout=5m
+          kubectl rollout status deployment cert-manager-webhook -n cert-manager --timeout=5m
+          kubectl rollout status deployment cert-manager-cainjector -n cert-manager --timeout=5m
+          
+          # Verify AWS_ROLE_ARN is now present
+          if kubectl get pods -n cert-manager -l app.kubernetes.io/name=cert-manager -o jsonpath='{.items[0].spec.containers[0].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+            echo "✅ Success! cert-manager now has AWS_ROLE_ARN injected."
+          else
+            echo "⚠️  Warning: cert-manager restarted but AWS_ROLE_ARN not found. Check webhook logs."
+            exit 1
+          fi
+      # Run on system nodes with critical addons
+      nodeSelector:
+        node-type: system
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists

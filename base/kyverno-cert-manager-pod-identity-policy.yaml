@@ -9,14 +9,13 @@ metadata:
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/minversion: 1.6.0
     policies.kyverno.io/description: >-
-      This policy ensures that cert-manager controller pods have the AWS_ROLE_ARN 
-      environment variable injected by the EKS Pod Identity webhook. If the environment 
-      variable is missing, the pod is rejected. The webhook has failurePolicy: Ignore, 
-      so cert-manager will retry until the webhook is healthy and can inject credentials.
+      This policy audits that cert-manager controller pods have the AWS_ROLE_ARN 
+      environment variable injected by the EKS Pod Identity webhook. Uses Audit mode 
+      because cert-manager must start before the webhook (webhook depends on cert-manager for TLS certs).
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
-  validationFailureAction: Enforce
+  validationFailureAction: Audit
   background: true
   rules:
   - name: validate-cert-manager-aws-role-arn-env-var
@@ -34,8 +33,8 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Cert-manager controller pod must have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. 
-        Verify the webhook is running and healthy. The deployment will retry automatically.
+        [AUDIT] Cert-manager controller pod should have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. 
+        This is expected during initial bootstrap when webhook is not yet running.
       deny:
         conditions:
           all:
@@ -57,12 +56,12 @@ metadata:
     policies.kyverno.io/subject: Pod
     policies.kyverno.io/minversion: 1.6.0
     policies.kyverno.io/description: >-
-      This policy ensures that cert-manager controller pods are using the correct 
+      This policy audits that cert-manager controller pods are using the correct 
       service account that has the EKS role annotation for pod identity.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
-  validationFailureAction: Enforce
+  validationFailureAction: Audit
   background: true
   rules:
   - name: validate-cert-manager-serviceaccount-name
@@ -80,7 +79,7 @@ spec:
           - UPDATE
     validate:
       message: >-
-        Cert-manager controller pod must use ServiceAccount 'cert-manager' in namespace 'cert-manager' so Pod Identity can supply AWS credentials.
+        [AUDIT] Cert-manager controller pod should use ServiceAccount 'cert-manager' in namespace 'cert-manager' so Pod Identity can supply AWS credentials.
       deny:
         conditions:
           all:
