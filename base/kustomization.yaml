@@ -12,3 +12,5 @@ resources:
   - kyverno-ebs-csi-controller-pod-identity-policy.yaml
   - kyverno-external-dns-pod-identity-policy.yaml
   - cert-manager-restart-job.yaml
+  - ebs-csi-controller-restart-job.yaml
+  - karpenter-restart-job.yaml
