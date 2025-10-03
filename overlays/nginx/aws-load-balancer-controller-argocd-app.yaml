@@ -58,7 +58,7 @@ spec:
               app.kubernetes.io/name: aws-load-balancer-controller  
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: aws-load-balancer-controller
   ignoreDifferences:
     - group: apps
       jsonPointers:

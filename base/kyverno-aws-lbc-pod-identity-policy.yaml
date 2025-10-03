@@ -3,7 +3,7 @@ kind: ClusterPolicy
 metadata:
   name: validate-aws-lbc-pod-identity
   annotations:
-    policies.kyverno.io/title: Validate AWS Load Balancer Controller Pod Identity
+    policies.kyverno.io/title: Validate AWS Load Balancer Controller Pod Identity Webhook Mutation
     policies.kyverno.io/category: Security, AWS
     policies.kyverno.io/severity: high
     policies.kyverno.io/subject: Pod
@@ -11,7 +11,7 @@ metadata:
     policies.kyverno.io/description: >-
       This policy ensures that AWS Load Balancer Controller pods have the AWS_ROLE_ARN 
       environment variable injected by the EKS Pod Identity webhook. If the environment 
-      variable is missing, the pod is rejected, allowing the webhook to retry the mutation.
+      variable is missing, the pod is rejected, forcing the webhook to retry the mutation.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     argocd.argoproj.io/sync-wave: "3"
 spec:
@@ -27,13 +27,15 @@ spec:
           names:
           - "aws-load-balancer-controller-*"
           namespaces:
-          - kube-system
+          - aws-load-balancer-controller
           operations:
           - CREATE
           - UPDATE
     validate:
       message: >-
-        AWS Load Balancer Controller pod must have AWS_ROLE_ARN injected into container 'aws-load-balancer-controller' by the EKS Pod Identity webhook. Ensure the webhook is healthy and rerun the rollout.
+        AWS Load Balancer Controller pod must have AWS_ROLE_ARN environment variable injected by the EKS Pod Identity webhook. 
+        The webhook should read the 'eks.amazonaws.com/role-arn' annotation from the service account and inject it as AWS_ROLE_ARN env var.
+        Current container env: {{ request.object.spec.containers[?name=='aws-load-balancer-controller'] | [0].env || `[]` }}
       deny:
         conditions:
           all:
@@ -43,45 +45,3 @@ spec:
           - key: "{{ request.object.spec.containers[?name=='aws-load-balancer-controller'] | [0].env || `[]` | [?name=='AWS_ROLE_ARN'] | length(@) }}"
             operator: Equals
             value: 0
----
-apiVersion: kyverno.io/v1
-kind: ClusterPolicy
-metadata:
-  name: validate-aws-lbc-serviceaccount-pod-identity
-  annotations:
-    policies.kyverno.io/title: Validate AWS Load Balancer Controller ServiceAccount Pod Identity
-    policies.kyverno.io/category: Security, AWS
-    policies.kyverno.io/severity: medium
-    policies.kyverno.io/subject: Pod
-    policies.kyverno.io/minversion: 1.6.0
-    policies.kyverno.io/description: >-
-      This policy ensures that AWS Load Balancer Controller pods are using the correct 
-      service account that has the EKS role annotation for pod identity.
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "3"
-spec:
-  validationFailureAction: Enforce
-  background: true
-  rules:
-  - name: validate-serviceaccount-name
-    match:
-      any:
-      - resources:
-          kinds:
-          - Pod
-          names:
-          - "aws-load-balancer-controller-*"
-          namespaces:
-          - kube-system
-          operations:
-          - CREATE
-          - UPDATE
-    validate:
-      message: >-
-        AWS Load Balancer Controller pod must run with ServiceAccount 'aws-load-balancer-controller' in namespace 'kube-system' so Pod Identity can provide AWS credentials.
-      deny:
-        conditions:
-          all:
-          - key: "{{ request.object.spec.serviceAccountName }}"
-            operator: NotEquals
-            value: "aws-load-balancer-controller"
