@@ -226,3 +226,9 @@ spec:
             echo "⚠️  Some resources still remain. Review the output above."
             exit 1
           fi
+      # Run on system nodes with critical addons
+      nodeSelector:
+        node-type: system
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
