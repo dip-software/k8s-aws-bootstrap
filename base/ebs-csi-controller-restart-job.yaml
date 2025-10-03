@@ -2,7 +2,7 @@ apiVersion: v1
 kind: ServiceAccount
 metadata:
   name: ebs-csi-controller-restarter
-  namespace: kube-system
+  namespace: aws-ebs-csi-driver
   annotations:
     argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
@@ -12,7 +12,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
   name: ebs-csi-controller-restarter
-  namespace: kube-system
+  namespace: aws-ebs-csi-driver
   annotations:
     argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
@@ -30,7 +30,7 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
   name: ebs-csi-controller-restarter
-  namespace: kube-system
+  namespace: aws-ebs-csi-driver
   annotations:
     argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
@@ -42,13 +42,13 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: ebs-csi-controller-restarter
-  namespace: kube-system
+  namespace: aws-ebs-csi-driver
 ---
 apiVersion: batch/v1
 kind: Job
 metadata:
   name: ebs-csi-controller-restarter
-  namespace: kube-system
+  namespace: aws-ebs-csi-driver
   annotations:
     argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
@@ -87,13 +87,13 @@ spec:
           echo "Webhook is ready. Checking if EBS CSI controller needs restart..."
           
           # Wait for EBS CSI controller deployment to exist
-          until kubectl get deployment ebs-csi-controller -n kube-system 2>/dev/null; do
+          until kubectl get deployment ebs-csi-controller -n aws-ebs-csi-driver 2>/dev/null; do
             echo "Waiting for ebs-csi-controller deployment to exist..."
             sleep 5
           done
           
           # Check if ebs-csi-controller pods already have AWS_ROLE_ARN
-          if kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver,app.kubernetes.io/component=csi-driver -o jsonpath='{.items[0].spec.containers[?(@.name=="ebs-plugin")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+          if kubectl get pods -n aws-ebs-csi-driver -l app.kubernetes.io/name=aws-ebs-csi-driver,app.kubernetes.io/component=csi-driver -o jsonpath='{.items[0].spec.containers[?(@.name=="ebs-plugin")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
             echo "EBS CSI controller already has AWS_ROLE_ARN injected. No restart needed."
             exit 0
           fi
@@ -101,13 +101,13 @@ spec:
           echo "EBS CSI controller does not have AWS_ROLE_ARN. Restarting deployment..."
           
           # Restart ebs-csi-controller deployment to get Pod Identity injected
-          kubectl rollout restart deployment ebs-csi-controller -n kube-system
+          kubectl rollout restart deployment ebs-csi-controller -n aws-ebs-csi-driver
           
           echo "Waiting for ebs-csi-controller rollout to complete..."
-          kubectl rollout status deployment ebs-csi-controller -n kube-system --timeout=5m
+          kubectl rollout status deployment ebs-csi-controller -n aws-ebs-csi-driver --timeout=5m
           
           # Verify AWS_ROLE_ARN is now present
-          if kubectl get pods -n kube-system -l app.kubernetes.io/name=aws-ebs-csi-driver,app.kubernetes.io/component=csi-driver -o jsonpath='{.items[0].spec.containers[?(@.name=="ebs-plugin")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+          if kubectl get pods -n aws-ebs-csi-driver -l app.kubernetes.io/name=aws-ebs-csi-driver,app.kubernetes.io/component=csi-driver -o jsonpath='{.items[0].spec.containers[?(@.name=="ebs-plugin")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
             echo "✅ Success! EBS CSI controller now has AWS_ROLE_ARN injected."
           else
             echo "⚠️  Warning: EBS CSI controller restarted but AWS_ROLE_ARN not found. Check webhook logs."
