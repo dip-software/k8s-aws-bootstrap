@@ -27,7 +27,7 @@ spec:
           names:
           - "ebs-csi-controller-*"
           namespaces:
-          - kube-system
+          - aws-ebs-csi-driver
           operations:
           - CREATE
           - UPDATE
@@ -74,13 +74,13 @@ spec:
           names:
           - "ebs-csi-controller-*"
           namespaces:
-          - kube-system
+          - aws-ebs-csi-driver
           operations:
           - CREATE
           - UPDATE
     validate:
       message: >
-        EBS CSI Controller pod must run with ServiceAccount 'aws-ebs-csi-driver' in namespace 'kube-system' so Pod Identity can assume the correct AWS IAM role.
+        EBS CSI Controller pod must run with ServiceAccount 'aws-ebs-csi-driver' in namespace 'aws-ebs-csi-driver' so Pod Identity can assume the correct AWS IAM role.
       deny:
         conditions:
           all:

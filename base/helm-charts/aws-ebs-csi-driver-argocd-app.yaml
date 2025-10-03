@@ -52,7 +52,7 @@ spec:
               memory: 86Mi
   destination:
     server: https://kubernetes.default.svc
-    namespace: kube-system
+    namespace: aws-ebs-csi-driver
   syncPolicy:
     automated:
       prune: true
