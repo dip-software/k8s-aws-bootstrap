@@ -82,12 +82,16 @@ spec:
             
             # Only patch if not already at root
             if [ "${CURRENT_PATH}" != "." ]; then
+              # Ensure auto-sync is disabled before changing path to prevent self-healing
+              echo "Ensuring auto-sync is disabled before path change..."
+              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
+              
               kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"."}}}'
               echo "✅ Bootstrap app source path changed to '.'"
               
-              # Trigger manual sync
-              echo "Triggering manual sync..."
-              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD"}}}'
+              # Trigger manual sync with pruning to clean up overlay apps
+              echo "Triggering manual sync with pruning..."
+              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD","prune":true}}}'
               
               # Wait for sync to complete
               echo "Waiting for sync to complete..."
@@ -118,6 +122,16 @@ spec:
           # Step 3: Patch Karpenter NodePool to Zero CPU
           echo "Step 3: Patching Karpenter NodePool to zero CPU..."
           if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
+            # First disable Karpenter ArgoCD auto-sync to prevent patch from being undone
+            echo "Disabling auto-sync for Karpenter ArgoCD application..."
+            if kubectl get application karpenter -n argocd >/dev/null 2>&1; then
+              kubectl patch application karpenter -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
+              echo "✅ Karpenter app auto-sync disabled"
+            else
+              echo "⚠️  Karpenter application not found, proceeding with patch..."
+            fi
+            
+            # Now patch the NodePool CPU limit
             kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
             
             # Verify the patch
