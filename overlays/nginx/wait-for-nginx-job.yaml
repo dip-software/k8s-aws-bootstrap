@@ -4,18 +4,14 @@ metadata:
   name: wait-for-nginx
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "15"
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: wait-for-nginx
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "15"
 rules:
 - apiGroups: ["networking.k8s.io"]
   resources: ["ingressclasses"]
@@ -26,9 +22,7 @@ kind: ClusterRoleBinding
 metadata:
   name: wait-for-nginx
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "15"
 roleRef:
   apiGroup: rbac.authorization.k8s.io
   kind: ClusterRole
@@ -44,9 +38,7 @@ metadata:
   name: wait-for-nginx
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
-    argocd.argoproj.io/hook: PreSync
-    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    argocd.argoproj.io/sync-wave: "15"
 spec:
   ttlSecondsAfterFinished: 300
   template:
