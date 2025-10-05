@@ -125,8 +125,17 @@ spec:
             # First disable Karpenter ArgoCD auto-sync to prevent patch from being undone
             echo "Disabling auto-sync for Karpenter ArgoCD application..."
             if kubectl get application karpenter -n argocd >/dev/null 2>&1; then
+              # Completely disable automated sync policy including self-heal
               kubectl patch application karpenter -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
               echo "✅ Karpenter app auto-sync disabled"
+              
+              # Verify auto-sync is disabled
+              AUTO_SYNC=$(kubectl get application karpenter -n argocd -o jsonpath='{.spec.syncPolicy.automated}')
+              if [ -z "${AUTO_SYNC}" ] || [ "${AUTO_SYNC}" = "null" ]; then
+                echo "✅ Confirmed: Karpenter auto-sync is disabled"
+              else
+                echo "⚠️  Warning: Karpenter auto-sync may still be active: ${AUTO_SYNC}"
+              fi
             else
               echo "⚠️  Karpenter application not found, proceeding with patch..."
             fi
@@ -134,9 +143,39 @@ spec:
             # Now patch the NodePool CPU limit
             kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
             
-            # Verify the patch
+            # Verify the patch immediately
             CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
             echo "✅ NodePool CPU limit set to: ${CPU_LIMIT}"
+            
+            # Quick verification that patch persists by checking for ArgoCD sync status
+            echo "Verifying patch persists against ArgoCD sync..."
+            for i in $(seq 1 6); do
+              # Check if Karpenter app is trying to sync
+              SYNC_STATUS=$(kubectl get application karpenter -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "Unknown")
+              OPERATION_STATE=$(kubectl get application karpenter -n argocd -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "")
+              
+              # Check if NodePool CPU is still 0
+              CURRENT_CPU=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}' 2>/dev/null || echo "")
+              
+              echo "Check ${i}/6: Sync=${SYNC_STATUS}, Operation=${OPERATION_STATE}, CPU=${CURRENT_CPU}"
+              
+              if [ "${CURRENT_CPU}" != "0" ]; then
+                echo "❌ NodePool CPU limit reverted to: ${CURRENT_CPU} - ArgoCD sync detected"
+                echo "Attempting stronger auto-sync disable..."
+                kubectl patch application karpenter -n argocd --type merge -p '{"spec":{"syncPolicy":null}}'
+                kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
+                echo "⚠️  Re-applied patches"
+                break
+              fi
+              
+              # If no sync operation is running and CPU is still 0, we're good
+              if [ "${OPERATION_STATE}" != "Running" ] && [ "${CURRENT_CPU}" = "0" ]; then
+                echo "✅ NodePool CPU=0 patch is stable"
+                break
+              fi
+              
+              sleep 2
+            done
           else
             echo "⚠️  NodePool 'default' not found in karpenter namespace, skipping..."
           fi
