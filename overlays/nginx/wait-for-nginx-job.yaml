@@ -1,0 +1,86 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: wait-for-nginx
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: wait-for-nginx
+  annotations:
+    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: ["networking.k8s.io"]
+  resources: ["ingressclasses"]
+  verbs: ["get", "list"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: wait-for-nginx
+  annotations:
+    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: wait-for-nginx
+subjects:
+- kind: ServiceAccount
+  name: wait-for-nginx
+  namespace: argocd
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: wait-for-nginx
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/hook: PreSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: wait-for-nginx
+    spec:
+      serviceAccountName: wait-for-nginx
+      restartPolicy: OnFailure
+      containers:
+      - name: wait-for-nginx
+        image: alpine/k8s:1.32.0
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          
+          echo "=========================================="
+          echo "Waiting for NGINX IngressClass"
+          echo "=========================================="
+          echo ""
+          
+          # Wait for nginx IngressClass to be created
+          echo "Waiting for nginx IngressClass to be created..."
+          until kubectl get ingressclass nginx 2>/dev/null; do
+            echo "nginx IngressClass not found, waiting..."
+            sleep 5
+          done
+          
+          echo "✅ nginx IngressClass found!"
+          echo "✅ Safe to create Ingress resources with ingressClassName: nginx"
+      # Run on system nodes with critical addons
+      nodeSelector:
+        node-type: system
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
