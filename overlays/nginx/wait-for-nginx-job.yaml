@@ -4,7 +4,7 @@ metadata:
   name: wait-for-nginx
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/sync-wave: "20"
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 ---
@@ -13,7 +13,7 @@ kind: ClusterRole
 metadata:
   name: wait-for-nginx
   annotations:
-    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/sync-wave: "20"
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 rules:
@@ -26,7 +26,7 @@ kind: ClusterRoleBinding
 metadata:
   name: wait-for-nginx
   annotations:
-    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/sync-wave: "20"
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 roleRef:
@@ -44,7 +44,7 @@ metadata:
   name: wait-for-nginx
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "19"
+    argocd.argoproj.io/sync-wave: "20"
     argocd.argoproj.io/hook: PreSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
