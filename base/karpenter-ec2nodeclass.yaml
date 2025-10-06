@@ -99,7 +99,8 @@ spec:
     # Export K3s environment variables for agent installation
     export K3S_TOKEN="$K3S_TOKEN"
     export K3S_URL="${CLUSTER_ENDPOINT}"
-    
+    export INSTALL_K3S_CHANNEL="${K3S_CHANNEL}"
+
     # Install K3s agent
     curl -sfL https://get.k3s.io | sh -s - \
       --node-name karpenter-$INSTANCE_ID \
