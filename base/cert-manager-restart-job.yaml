@@ -20,8 +20,11 @@ metadata:
 rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
-  verbs: ["get", "patch"]
+  verbs: ["get", "patch", "list"]
   resourceNames: ["cert-manager", "cert-manager-webhook", "cert-manager-cainjector"]
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["list"]
 - apiGroups: [""]
   resources: ["pods"]
   verbs: ["list", "get"]
