@@ -16,6 +16,9 @@ rules:
 - apiGroups: ["networking.k8s.io"]
   resources: ["ingressclasses"]
   verbs: ["get", "list"]
+- apiGroups: [""]
+  resources: ["services", "endpoints"]
+  verbs: ["get", "list"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -57,19 +60,39 @@ spec:
           set -e
           
           echo "=========================================="
-          echo "Waiting for NGINX IngressClass"
+          echo "Waiting for NGINX IngressClass and Admission Webhook"
           echo "=========================================="
           echo ""
           
-          # Wait for nginx IngressClass to be created
-          echo "Waiting for nginx IngressClass to be created..."
+          # Step 1: Wait for nginx IngressClass to be created
+          echo "Step 1: Waiting for nginx IngressClass..."
           until kubectl get ingressclass nginx 2>/dev/null; do
             echo "nginx IngressClass not found, waiting..."
             sleep 5
           done
-          
           echo "✅ nginx IngressClass found!"
-          echo "✅ Safe to create Ingress resources with ingressClassName: nginx"
+          echo ""
+          
+          # Step 2: Wait for NGINX admission webhook service
+          echo "Step 2: Waiting for NGINX admission webhook service..."
+          until kubectl get service ingress-nginx-controller-admission -n ingress-nginx 2>/dev/null; do
+            echo "ingress-nginx-controller-admission service not found, waiting..."
+            sleep 5
+          done
+          echo "✅ NGINX admission webhook service found!"
+          echo ""
+          
+          # Step 3: Wait for admission webhook endpoints to be ready
+          echo "Step 3: Waiting for admission webhook endpoints..."
+          until kubectl get endpoints ingress-nginx-controller-admission -n ingress-nginx -o jsonpath='{.subsets[0].addresses[0].ip}' 2>/dev/null | grep -q .; do
+            echo "admission webhook endpoints not ready, waiting..."
+            sleep 5
+          done
+          echo "✅ NGINX admission webhook endpoints ready!"
+          echo ""
+          
+          echo "✅ NGINX Ingress Controller is fully ready!"
+          echo "✅ Safe to create Ingress resources - both IngressClass and admission webhook available"
       # Run on system nodes with critical addons
       nodeSelector:
         node-type: system
