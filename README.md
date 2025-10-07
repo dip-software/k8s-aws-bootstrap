@@ -105,3 +105,7 @@ Once all Karpenter resources are cleaned up, you can safely proceed with destroy
 - **Karpenter NodeClaims**: Must be deleted before destroying the cluster to prevent orphaned EC2 instances
 - **Auto-sync disabled**: Prevents ArgoCD from fighting the cleanup process
 - **Base configuration**: Switching to base removes complex resources like ingress controllers and external-dns that may have cloud resources attached
+
+## License
+
+This project is licensed under the Apache License 2.0 - see the [LICENSE](LICENSE) file for details.
