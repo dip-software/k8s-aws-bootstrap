@@ -135,7 +135,7 @@ spec:
                 runAsNonRoot: true
                 #Bug work-around. Change this back to 999 in the future
                 runAsUser: 999
-              image: quay.io/argoproj/argocd:v3.1.1
+              image: quay.io/argoproj/argocd:v3.1.8
               command: [/var/run/argocd/argocd-cmp-server]
               args:
                 - --loglevel
