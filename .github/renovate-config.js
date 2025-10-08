@@ -25,7 +25,7 @@ module.exports = {
   ],
   packageRules: [
     {
-      matchDatasources: ["github-releases"],
+      matchDatasources: ["helm", "docker", "github-releases"],
     },
   ],
 };
