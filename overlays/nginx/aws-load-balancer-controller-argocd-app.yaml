@@ -9,6 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://aws.github.io/eks-charts
+    # renovate: datasource=helm registryUrl=https://aws.github.io/eks-charts depName=aws-load-balancer-controller
     targetRevision: v1.13.4
     chart: aws-load-balancer-controller
     helm:
