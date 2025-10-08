@@ -10,7 +10,8 @@ spec:
   source:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
-    targetRevision: "*"
+    # renovate: datasource=helm registryUrl=https://prometheus-community.github.io/helm-charts depName=kube-prometheus-stack
+    targetRevision: 77.14.0
     helm:
       valuesObject:
         prometheus:
