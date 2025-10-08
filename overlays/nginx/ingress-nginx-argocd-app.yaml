@@ -17,7 +17,8 @@ spec:
   source:
     repoURL: https://kubernetes.github.io/ingress-nginx
     chart: ingress-nginx
-    targetRevision: "*"
+    # renovate: datasource=helm registryUrl=https://kubernetes.github.io/ingress-nginx depName=ingress-nginx
+    targetRevision: 4.13.3
     helm:
       valuesObject:
         controller:

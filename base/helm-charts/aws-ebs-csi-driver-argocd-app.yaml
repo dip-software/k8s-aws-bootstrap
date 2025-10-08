@@ -12,7 +12,8 @@ spec:
   source:
     repoURL: https://kubernetes-sigs.github.io/aws-ebs-csi-driver/
     chart: aws-ebs-csi-driver
-    targetRevision: "*"
+    # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/aws-ebs-csi-driver depName=aws-ebs-csi-driver
+    targetRevision: 2.50.0
     helm:
       valuesObject:
         storageClasses:
