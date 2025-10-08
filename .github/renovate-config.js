@@ -1,3 +1,9 @@
+const helmRegex = {
+  customType: "regex",
+  datasourceTemplate: "helm",
+  matchStringsStrategy: "combination",
+};
+
 module.exports = {
   username: "renovate[bot]",
   gitAuthor: "Renovate Bot <bot@renovateapp.com>",
@@ -21,6 +27,7 @@ module.exports = {
       matchStrings: [
         '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s+?(default|(?i:.*version))\\s?(:|=|:=|\\?=)\\s?"?(?<currentValue>\\S+?)"\\s',
         '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s*\\n\\s*targetRevision:\\s*(?<currentValue>\\S+)',
+        '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?registryUrl=(?<registryUrl>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s*\\n\\s*targetRevision:\\s*(?<currentValue>\\S+)',
       ],
     },
   ],
