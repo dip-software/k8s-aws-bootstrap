@@ -9,6 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://charts.jetstack.io
+    # renovate: datasource=github-releases depName=cert-manager/cert-manager
     targetRevision: v1.18.2
     chart: cert-manager
     helm:
