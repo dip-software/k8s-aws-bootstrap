@@ -13,7 +13,10 @@ module.exports = {
       matchStringsStrategy: "any",
       managerFilePatterns: [
         "/.github/workflows/.*.(yaml|yml)/",
-        "/.github/actions/.*.(yaml|yml)/"
+        "/.github/actions/.*.(yaml|yml)/",
+        "/base/.*.(yaml|yml)/",
+        "/base/helm-charts/.*.(yaml|yml)/",
+        "/overlays/nginx/.*.(yaml|yml)/"
       ],
       matchStrings: [
         '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s+?(default|(?i:.*version))\\s?(:|=|:=|\\?=)\\s?"?(?<currentValue>\\S+?)"\\s',
