@@ -20,6 +20,7 @@ module.exports = {
       ],
       matchStrings: [
         '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s+?(default|(?i:.*version))\\s?(:|=|:=|\\?=)\\s?"?(?<currentValue>\\S+?)"\\s',
+        '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s*\\n\\s*targetRevision:\\s*(?<currentValue>\\S+)',
       ],
     },
   ],
