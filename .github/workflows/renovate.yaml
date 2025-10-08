@@ -33,4 +33,4 @@ jobs:
           RENOVATE_ALLOW_SCRIPTS: true
           RENOVATE_SEPARATE_MAJOR_MINOR: false
           RENOVATE_REPOSITORIES: ${{ github.repository }}
-          LOG_LEVEL: 'debug'
+          LOG_LEVEL: 'info'
