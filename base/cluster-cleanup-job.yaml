@@ -13,10 +13,10 @@ rules:
 - apiGroups: ["argoproj.io"]
   resources: ["applications"]
   verbs: ["get", "list", "patch", "update"]
-# Karpenter NodePool and NodeClaim management
+# Karpenter NodeClaim management (no longer need nodepool patch)
 - apiGroups: ["karpenter.sh"]
-  resources: ["nodepools", "nodeclaims"]
-  verbs: ["get", "list", "patch", "delete", "watch"]
+  resources: ["nodeclaims"]
+  verbs: ["get", "list", "delete", "watch"]
 # Node listing for verification
 - apiGroups: [""]
   resources: ["nodes"]
@@ -73,25 +73,21 @@ spec:
           fi
           echo ""
           
-          # Step 2: Switch Bootstrap App to Base Kustomize Root
-          echo "Step 2: Switching bootstrap app to base kustomize root..."
+          # Step 2: Switch Bootstrap App to Shutdown Overlay
+          echo "Step 2: Switching bootstrap app to shutdown overlay..."
           if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
             # Get current source path
             CURRENT_PATH=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.source.path}')
             echo "Current path: ${CURRENT_PATH}"
             
-            # Only patch if not already at root
-            if [ "${CURRENT_PATH}" != "." ]; then
-              # Ensure auto-sync is disabled before changing path to prevent self-healing
-              echo "Ensuring auto-sync is disabled before path change..."
-              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
+            # Switch to shutdown overlay
+            if [ "${CURRENT_PATH}" != "overlays/shutdown" ]; then
+              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"overlays/shutdown"}}}'
+              echo "✅ Bootstrap app source path changed to 'overlays/shutdown'"
               
-              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"."}}}'
-              echo "✅ Bootstrap app source path changed to '.'"
-              
-              # Trigger manual sync with pruning to clean up overlay apps
-              echo "Triggering manual sync with pruning..."
-              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD","prune":true}}}'
+              # Trigger manual sync to apply shutdown overlay
+              echo "Triggering manual sync to apply shutdown overlay..."
+              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD","prune":false}}}'
               
               # Wait for sync to complete
               echo "Waiting for sync to complete..."
@@ -101,7 +97,7 @@ spec:
                 echo "Sync: ${SYNC_STATUS}, Health: ${HEALTH_STATUS}"
                 
                 if [ "${SYNC_STATUS}" = "Synced" ]; then
-                  echo "✅ Bootstrap app synced successfully"
+                  echo "✅ Bootstrap app synced successfully with shutdown overlay"
                   break
                 fi
                 
@@ -111,78 +107,28 @@ spec:
                 
                 sleep 5
               done
+              
+              # Verify NodePool CPU is now 0
+              echo "Verifying NodePool CPU limit after overlay application..."
+              if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
+                CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
+                echo "✅ NodePool CPU limit is now: ${CPU_LIMIT}"
+                
+                if [ "${CPU_LIMIT}" != "0" ]; then
+                  echo "❌ Expected CPU limit to be 0, but got: ${CPU_LIMIT}"
+                  echo "This may indicate the shutdown overlay didn't apply correctly"
+                fi
+              fi
             else
-              echo "✅ Bootstrap app already at base path"
+              echo "✅ Bootstrap app already using shutdown overlay"
             fi
           else
             echo "⚠️  Bootstrap application not found, skipping..."
           fi
           echo ""
           
-          # Step 3: Patch Karpenter NodePool to Zero CPU
-          echo "Step 3: Patching Karpenter NodePool to zero CPU..."
-          if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
-            # First disable Karpenter ArgoCD auto-sync to prevent patch from being undone
-            echo "Disabling auto-sync for Karpenter ArgoCD application..."
-            if kubectl get application karpenter -n argocd >/dev/null 2>&1; then
-              # Completely disable automated sync policy including self-heal
-              kubectl patch application karpenter -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
-              echo "✅ Karpenter app auto-sync disabled"
-              
-              # Verify auto-sync is disabled
-              AUTO_SYNC=$(kubectl get application karpenter -n argocd -o jsonpath='{.spec.syncPolicy.automated}')
-              if [ -z "${AUTO_SYNC}" ] || [ "${AUTO_SYNC}" = "null" ]; then
-                echo "✅ Confirmed: Karpenter auto-sync is disabled"
-              else
-                echo "⚠️  Warning: Karpenter auto-sync may still be active: ${AUTO_SYNC}"
-              fi
-            else
-              echo "⚠️  Karpenter application not found, proceeding with patch..."
-            fi
-            
-            # Now patch the NodePool CPU limit
-            kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
-            
-            # Verify the patch immediately
-            CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
-            echo "✅ NodePool CPU limit set to: ${CPU_LIMIT}"
-            
-            # Quick verification that patch persists by checking for ArgoCD sync status
-            echo "Verifying patch persists against ArgoCD sync..."
-            for i in $(seq 1 6); do
-              # Check if Karpenter app is trying to sync
-              SYNC_STATUS=$(kubectl get application karpenter -n argocd -o jsonpath='{.status.sync.status}' 2>/dev/null || echo "Unknown")
-              OPERATION_STATE=$(kubectl get application karpenter -n argocd -o jsonpath='{.status.operationState.phase}' 2>/dev/null || echo "")
-              
-              # Check if NodePool CPU is still 0
-              CURRENT_CPU=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}' 2>/dev/null || echo "")
-              
-              echo "Check ${i}/6: Sync=${SYNC_STATUS}, Operation=${OPERATION_STATE}, CPU=${CURRENT_CPU}"
-              
-              if [ "${CURRENT_CPU}" != "0" ]; then
-                echo "❌ NodePool CPU limit reverted to: ${CURRENT_CPU} - ArgoCD sync detected"
-                echo "Attempting stronger auto-sync disable..."
-                kubectl patch application karpenter -n argocd --type merge -p '{"spec":{"syncPolicy":null}}'
-                kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
-                echo "⚠️  Re-applied patches"
-                break
-              fi
-              
-              # If no sync operation is running and CPU is still 0, we're good
-              if [ "${OPERATION_STATE}" != "Running" ] && [ "${CURRENT_CPU}" = "0" ]; then
-                echo "✅ NodePool CPU=0 patch is stable"
-                break
-              fi
-              
-              sleep 2
-            done
-          else
-            echo "⚠️  NodePool 'default' not found in karpenter namespace, skipping..."
-          fi
-          echo ""
-          
-          # Step 4: Remove All NodeClaims
-          echo "Step 4: Removing all NodeClaims..."
+          # Step 3: Remove All NodeClaims
+          echo "Step 3: Removing all NodeClaims..."
           
           # Check if any nodeclaims exist
           NODECLAIM_COUNT=$(kubectl get nodeclaims -n karpenter --no-headers 2>/dev/null | wc -l | tr -d ' ')
@@ -211,9 +157,9 @@ spec:
           fi
           echo ""
           
-          # Step 5: Verify Cleanup
+          # Step 4: Verify Cleanup
           echo "=========================================="
-          echo "Step 5: Verification"
+          echo "Step 4: Verification"
           echo "=========================================="
           echo ""
           
@@ -248,9 +194,17 @@ spec:
           fi
           echo ""
           
-          echo "Checking bootstrap app auto-sync status..."
+          echo "Checking bootstrap app configuration..."
           if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
+            CURRENT_PATH=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.source.path}')
             AUTO_SYNC=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.syncPolicy.automated}')
+            
+            if [ "${CURRENT_PATH}" = "overlays/shutdown" ]; then
+              echo "✅ Bootstrap app is using shutdown overlay"
+            else
+              echo "⚠️  Bootstrap app path is '${CURRENT_PATH}' (expected: 'overlays/shutdown')"
+            fi
+            
             if [ -z "${AUTO_SYNC}" ] || [ "${AUTO_SYNC}" = "null" ]; then
               echo "✅ Bootstrap app auto-sync is disabled"
             else
@@ -266,8 +220,8 @@ spec:
           echo ""
           echo "Summary:"
           echo "  - Auto-sync: Disabled"
-          echo "  - Bootstrap path: Switched to base"
-          echo "  - NodePool CPU limit: 0"
+          echo "  - Bootstrap path: Switched to shutdown overlay"
+          echo "  - NodePool CPU limit: 0 (via shutdown overlay)"
           echo "  - NodeClaims: ${NODECLAIM_COUNT} remaining"
           echo "  - Karpenter nodes: ${KARPENTER_NODES} remaining"
           echo ""

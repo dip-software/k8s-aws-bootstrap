@@ -1,0 +1,10 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: default
+  namespace: karpenter
+spec:
+  # Set CPU limit to 0 to prevent new node provisioning during shutdown
+  limits:
+    cpu: "0"
+    memory: "200Gi"
