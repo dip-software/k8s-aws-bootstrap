@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://jkroepke.github.io/helm-charts/
     # renovate: datasource=helm registryUrl=https://jkroepke.github.io/helm-charts depName=amazon-eks-pod-identity-webhook
-    targetRevision: 2.5.3
+    targetRevision: 2.5.4
     chart: amazon-eks-pod-identity-webhook 
     helm:
       valuesObject: 
