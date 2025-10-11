@@ -20,6 +20,7 @@ spec:
           awsAccountId: ${AWS_ACCOUNT_ID}
           oidcProvider: ${OIDC_PROVIDER}
           oidcProviderArn: ${OIDC_PROVIDER_ARN}
+          clusterName: ${CLUSTER_NAME}
         providers:
           - name: provider-aws-iam
             enabled: true
