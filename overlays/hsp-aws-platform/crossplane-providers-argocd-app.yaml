@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: oci://ghcr.io/philips-software/helm-charts/crossplane-providers
     # renovate: datasource=github-releases depName=philips-software/helm-charts
-    targetRevision: 0.0.4
+    targetRevision: 0.0.5
     path: .
     helm:
       values: |
@@ -21,11 +21,10 @@ spec:
           oidcProvider: ${OIDC_PROVIDER}
           oidcProviderArn: ${OIDC_PROVIDER_ARN}
           clusterName: ${CLUSTER_NAME}
-        providers:
+        extraProviders:
           - name: provider-aws-iam
             enabled: true
             roleArn: ${CROSSPLANE_PROVIDER_AWS_IAM_ROLE_ARN}
-
   destination:
     server: https://kubernetes.default.svc
     namespace: crossplane-system
