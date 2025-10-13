@@ -25,6 +25,12 @@ spec:
           - name: provider-aws-iam
             enabled: true
             roleArn: ${CROSSPLANE_PROVIDER_AWS_IAM_ROLE_ARN}
+            resources:
+              requests:
+                cpu: 50m
+                memory: 400Mi
+              limits:
+                memory: 512Mi 
   destination:
     server: https://kubernetes.default.svc
     namespace: crossplane-system
