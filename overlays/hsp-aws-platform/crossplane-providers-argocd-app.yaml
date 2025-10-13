@@ -17,7 +17,7 @@ spec:
         config:
           awsRegion: ${AWS_REGION}
           resourcePrefix: ${RESOURCE_PREFIX}
-          awsAccountId: ${AWS_ACCOUNT_ID}
+          awsAccountId: "${AWS_ACCOUNT_ID}"
           oidcProvider: ${OIDC_PROVIDER}
           oidcProviderArn: ${OIDC_PROVIDER_ARN}
           clusterName: ${CLUSTER_NAME}
