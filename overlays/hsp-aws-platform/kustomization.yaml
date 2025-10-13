@@ -4,3 +4,4 @@ kind: Kustomization
 resources:
   - ../nginx
   - crossplane-providers-argocd-app.yaml
+  - providerconfig-aws.yaml
