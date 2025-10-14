@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: oci://ghcr.io/philips-software/helm-charts/crossplane-providers
     # renovate: datasource=github-releases depName=philips-software/helm-charts
-    targetRevision: 0.0.13
+    targetRevision: 0.0.14
     path: .
     helm:
       values: |
