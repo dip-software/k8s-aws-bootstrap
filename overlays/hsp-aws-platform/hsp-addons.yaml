@@ -10,6 +10,8 @@ metadata:
   name: hsp-addons
   namespace: hsp-addons
 data:
+  accountId: |
+    "${AWS_ACCOUNT_ID}"
   region: "${AWS_REGION}"
   enabledPullThroughRegistries: |
     []
