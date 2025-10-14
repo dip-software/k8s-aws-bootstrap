@@ -6,3 +6,4 @@ resources:
   - crossplane-providers-argocd-app.yaml
   - crossplane-functions-argocd-app.yaml
   - providerconfig-aws.yaml
+  - hsp-addons.yaml

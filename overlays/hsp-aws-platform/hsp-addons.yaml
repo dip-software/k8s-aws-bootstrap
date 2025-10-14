@@ -1,0 +1,30 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hsp-addons
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsp-addons
+  namespace: hsp-addons
+data:
+  accountId: "${AWS_ACCOUNT_ID}"
+  region: "${AWS_REGION}"
+  enabledPullThroughRegistries: |
+    []
+  eks: |
+    {
+      "oidcProviderArn": "${OIDC_PROVIDER_ARN}",
+      "oidcProvider": "${OIDC_PROVIDER}",
+      "clusterName": "${CLUSTER_NAME}",
+      "clusterId": "${CLUSTER_NAME}",
+      "resourcePrefix": "${RESOURCE_PREFIX}",
+      "clusterFqdn": "${CLUSTER_FQDN}",
+      "clusterEndpoint": "${CLUSTER_ENDPOINT}"
+    }
+  servicesVpc: |
+    {
+      "vpcId": "${AWS_VPC_ID}"
+    }
