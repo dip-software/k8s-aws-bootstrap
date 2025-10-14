@@ -56,6 +56,12 @@ spec:
                     "ProviderConfigUsage"
                   }
                   
+                  local REVISION_CHECK_KINDS = {
+                    "FunctionRevision",
+                    "ProviderRevision",
+                    "CompositionRevision"
+                  }
+
                   -- Condition types that indicate a healthy resource
                   local HEALTHY_CONDITION_TYPES = {
                     "Ready",
@@ -105,6 +111,30 @@ spec:
                     return nil
                   end
                   
+                  -- Handle resources without status conditions but with other status fields
+                  local function handle_resources_with_revision_checks()
+                    if contains(REVISION_CHECK_KINDS, obj.kind) then
+                      if not obj.status or not obj.status.conditions then
+                        return nil
+                      end
+                      local revision_healthy = false
+                      local runtime_healthy = false
+                      for i, condition in ipairs(obj.status.conditions) do
+                        if condition.type == "RevisionHealthy" and condition.status == "True" then
+                          revision_healthy = true
+                        end
+                        if condition.type == "RuntimeHealthy" and condition.status == "True" then
+                          runtime_healthy = true
+                        end
+                      end
+                      if revision_healthy and runtime_healthy then
+                        return create_health_status(HEALTH_STATUS.HEALTHY, "Resource is up-to-date.")
+                      end
+                    end
+
+                    return nil
+                  end
+
                   -- Handle ProviderConfig resources specially
                   local function handle_provider_config()
                     if not obj or obj.kind ~= "ProviderConfig" then
@@ -166,6 +196,12 @@ spec:
                       return result
                     end
                     
+                    -- Handle resources with revision checks
+                    result = handle_resources_with_revision_checks()
+                    if result then
+                      return result
+                    end
+
                     -- If no status or conditions, default to progressing
                     if not obj.status or not obj.status.conditions then
                       return DEFAULT_HEALTH_STATUS
