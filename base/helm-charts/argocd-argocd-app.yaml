@@ -10,7 +10,8 @@ spec:
   source:
     repoURL: https://argoproj.github.io/argo-helm
     chart: argo-cd
-    targetRevision: "*"
+    # renovate: datasource=helm registryUrl=https://argoproj.github.io/argo-helm depName=argo-cd
+    targetRevision: "8.6.3"
     helm:
       valuesObject:    
         global:
