@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: oci://ghcr.io/philips-software/helm-charts/crossplane-functions
-    targetRevision: 0.0.2
+    targetRevision: 0.0.4
     path: .
     helm:
       values: |
