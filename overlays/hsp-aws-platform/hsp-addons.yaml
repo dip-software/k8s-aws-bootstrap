@@ -9,6 +9,8 @@ kind: ConfigMap
 metadata:
   name: hsp-addons
   namespace: hsp-addons
+  labels:
+    cache.kyverno.io/enabled: "true"
 data:
   accountId: |
     ${AWS_ACCOUNT_ID}
