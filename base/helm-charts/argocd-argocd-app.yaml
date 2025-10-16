@@ -365,7 +365,7 @@ spec:
                   name: envsubst-plugin
                   subPath: envsubst-plugin.sh
                 - mountPath: /home/argocd/cmp-server/config/env
-                  name: envsubst-env-vars
+                  name: envsubst-env-vars # TODO: verify if this is still corect
                 - mountPath: /custom-tools
                   name: custom-tools
               resources:
@@ -377,7 +377,7 @@ spec:
                   cpu: "100m"
               envFrom:
                 - configMapRef:
-                    name: envsubst-plugin-env-vars
+                    name: envsubst-env-vars
           
           volumes:
             - configMap:
@@ -385,7 +385,7 @@ spec:
                 defaultMode: 0755
               name: envsubst-plugin
             - configMap:
-                name: envsubst-plugin-env-vars
+                name: envsubst-env-vars
               name: envsubst-env-vars
             - configMap:
                 name: argocd-cmp-cm
