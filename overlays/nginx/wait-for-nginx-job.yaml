@@ -59,6 +59,7 @@ spec:
       restartPolicy: OnFailure
       containers:
       - name: wait-for-nginx
+        # renovate: datasource=docker depName=alpine/k8s
         image: alpine/k8s:1.32.0
         command:
         - sh

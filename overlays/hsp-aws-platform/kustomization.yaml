@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../nginx
+  - eso
   - crossplane-providers-argocd-app.yaml
   - crossplane-functions-argocd-app.yaml
   - providerconfig-aws.yaml

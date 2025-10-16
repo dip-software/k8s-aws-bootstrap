@@ -35,7 +35,6 @@ spec:
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
-          affinity:
           service:
             type: LoadBalancer
             annotations:
