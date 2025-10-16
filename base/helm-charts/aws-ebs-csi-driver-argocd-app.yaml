@@ -29,7 +29,6 @@ spec:
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
-          affinity:
           resources:
             requests:
               cpu: 10m
