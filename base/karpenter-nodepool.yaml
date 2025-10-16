@@ -57,7 +57,7 @@ spec:
       expireAfter: 360h # 15 days
       
       # Termination grace period
-      terminationGracePeriod: 48h
+      terminationGracePeriod: 10m
       
   # Resource limits to control costs
   limits:
