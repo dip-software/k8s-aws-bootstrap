@@ -16,6 +16,22 @@ spec:
     targetRevision: 78.3.0
     helm:
       valuesObject:
+        alertmanager:
+          alertmanagerSpec:
+            # Run on system nodes (critical component)
+            nodeSelector:
+              node-type: system
+            tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
+            affinity:
+            resources:
+              requests:
+                cpu: 5m
+                memory: 25Mi
+              limits:
+                cpu: 50m
+                memory: 50Mi
         prometheus:
           prometheusSpec:
             # Run on system nodes (critical component)
