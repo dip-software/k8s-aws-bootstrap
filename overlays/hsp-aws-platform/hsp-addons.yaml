@@ -33,6 +33,6 @@ data:
       "id": "${AWS_VPC_ID}",
       "privateSubnetIds": ${AWS_PRIVATE_SUBNET_IDS},
       "subnetGroups": {
-        "database": ${AWS_RDS_SUBNET_GROUP},
+        "database": ${AWS_RDS_SUBNET_GROUP}
       }
     }
