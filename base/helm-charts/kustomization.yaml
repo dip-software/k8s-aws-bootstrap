@@ -10,3 +10,5 @@ resources:
   - argocd-argocd-app.yaml
   - kyverno-argocd-app.yaml
   - kube-prometheus-stack-argocd-app.yaml
+  - aws-load-balancer-controller-argocd-app.yaml
+  - external-dns-argocd-app.yaml
