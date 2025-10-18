@@ -87,14 +87,13 @@ spec:
               - key: CriticalAddonsOnly
                 operator: Exists
               affinity:
-        kubeStateMetrics:
+        kube-state-metrics:
           # Run on system nodes (critical component)
           nodeSelector:
             node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
-          affinity:
           resources:
             requests:
               cpu: 5m
