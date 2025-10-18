@@ -78,6 +78,15 @@ spec:
             limits:
               cpu: 50m
               memory: 50Mi
+          admissionWebhooks:
+            patch:
+              # Run on system nodes (critical component)
+              nodeSelector:
+                node-type: system
+              tolerations:
+              - key: CriticalAddonsOnly
+                operator: Exists
+              affinity:
         kubeStateMetrics:
           # Run on system nodes (critical component)
           nodeSelector:
