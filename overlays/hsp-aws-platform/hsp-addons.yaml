@@ -34,10 +34,12 @@ data:
       "privateSubnetIds": ${AWS_PRIVATE_SUBNET_IDS},
       "subnetGroups": {
         "database": ${AWS_RDS_SUBNET_GROUP},
-        "redshift": ${AWS_REDSHIFT_SUBNET_GROUP}
+        "redshift": ${AWS_REDSHIFT_SUBNET_GROUP},
+        "elasticache": ${AWS_ELASTICACHE_SUBNET_GROUP}
       },
       "securityGroups": {
         "database": ${AWS_RDS_SECURITY_GROUPS},
-        "redshift": ${AWS_REDSHIFT_SECURITY_GROUPS}
+        "redshift": ${AWS_REDSHIFT_SECURITY_GROUPS},
+        "elasticache": ${AWS_ELASTICACHE_SECURITY_GROUPS}
       }
     }
