@@ -33,9 +33,11 @@ data:
       "id": "${AWS_VPC_ID}",
       "privateSubnetIds": ${AWS_PRIVATE_SUBNET_IDS},
       "subnetGroups": {
-        "database": ${AWS_RDS_SUBNET_GROUP}
+        "database": ${AWS_RDS_SUBNET_GROUP},
+        "redshift": ${AWS_REDSHIFT_SUBNET_GROUP}
       },
       "securityGroups": {
-        "database": ${AWS_RDS_SECURITY_GROUPS}
+        "database": ${AWS_RDS_SECURITY_GROUPS},
+        "redshift": ${AWS_REDSHIFT_SECURITY_GROUPS}
       }
     }
