@@ -40,6 +40,7 @@ data:
       "securityGroups": {
         "database": ${AWS_RDS_SECURITY_GROUPS},
         "redshift": ${AWS_REDSHIFT_SECURITY_GROUPS},
-        "elasticache": ${AWS_ELASTICACHE_SECURITY_GROUPS}
+        "elasticache": ${AWS_ELASTICACHE_SECURITY_GROUPS},
+        "activemq": ${AWS_ACTIVEMQ_SECURITY_GROUPS}
       }
     }
