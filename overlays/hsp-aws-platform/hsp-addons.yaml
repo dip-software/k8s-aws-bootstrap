@@ -34,5 +34,8 @@ data:
       "privateSubnetIds": ${AWS_PRIVATE_SUBNET_IDS},
       "subnetGroups": {
         "database": ${AWS_RDS_SUBNET_GROUP}
-      }
+      },
+      "securityGroups": {
+        "database": ${AWS_RDS_SECURITY_GROUPS}
+      }  
     }
