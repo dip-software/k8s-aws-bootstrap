@@ -44,3 +44,7 @@ data:
         "activemq": ${AWS_ACTIVEMQ_SECURITY_GROUPS}
       }
     }
+  tags: |
+    {
+      "Environment": "${RESOURCE_PREFIX}"
+    }
