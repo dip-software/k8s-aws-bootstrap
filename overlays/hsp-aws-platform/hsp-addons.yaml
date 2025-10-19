@@ -36,6 +36,5 @@ data:
         "database": ${AWS_RDS_SUBNET_GROUP}
       },
       "securityGroups": {
-        "database": ${AWS_RDS_SECURITY_GROUPS}
       }  
     }
