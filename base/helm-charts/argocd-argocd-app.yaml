@@ -24,6 +24,8 @@ spec:
 
         # Configs
         configs:
+          params:
+            application.namespaces: "*"
           cm:
             application.resourceTrackingMethod: annotation
             resource.customizations: |
