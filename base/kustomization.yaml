@@ -4,6 +4,7 @@ kind: Kustomization
 resources:
   - crds
   - helm-charts
+  - crossplane
   - letsencrypt-cert-issuer.yaml
   - karpenter-ec2nodeclass.yaml
   - karpenter-nodepool.yaml

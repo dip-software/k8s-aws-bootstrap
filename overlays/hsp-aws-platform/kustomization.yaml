@@ -4,5 +4,4 @@ kind: Kustomization
 resources:
   - ../nginx
   - eso
-  - crossplane
   - hsp-addons.yaml
