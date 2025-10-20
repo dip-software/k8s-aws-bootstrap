@@ -48,11 +48,10 @@ spec:
             operator: Exists
           resources:
             requests:
-              cpu: 5m
-              memory: 58Mi
+              cpu: 20m
+              memory: 128Mi
             limits:
-              cpu: 50m
-              memory: 116Mi
+              memory: 180Mi
               
         # Configure webhook with the same node placement
         webhook:
