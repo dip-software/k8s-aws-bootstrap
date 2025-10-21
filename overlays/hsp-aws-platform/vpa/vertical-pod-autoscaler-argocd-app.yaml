@@ -16,6 +16,14 @@ spec:
     chart: vertical-pod-autoscaler
     helm:
       valuesObject:
+        # CRDs configuration - use registry.k8s.io instead of docker.io/bitnami
+        crds:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+            tag: v1.31.3
+        
         # Admissioncontroller configuration
         admissioncontroller:
           enabled: true
