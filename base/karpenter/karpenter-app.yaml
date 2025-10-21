@@ -29,6 +29,7 @@ spec:
           # Enable drift detection for automatic node repair
           featureGates:
             drift: true
+            spotToSpotConsolidation: true
           # Optimize batching for responsive node health checks
           batchMaxDuration: 10s
           batchIdleDuration: 1s
