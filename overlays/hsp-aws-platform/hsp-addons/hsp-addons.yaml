@@ -11,6 +11,8 @@ metadata:
   namespace: hsp-addons
   labels:
     cache.kyverno.io/enabled: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
 data:
   accountId: |
     ${AWS_ACCOUNT_ID}

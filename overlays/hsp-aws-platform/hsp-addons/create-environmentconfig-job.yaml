@@ -1,0 +1,107 @@
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: environmentconfig-creator
+  namespace: hsp-addons
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: environmentconfig-creator
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apiextensions.crossplane.io"]
+    resources: ["environmentconfigs"]
+    verbs: ["create", "get", "list", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: environmentconfig-creator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: environmentconfig-creator
+subjects:
+  - kind: ServiceAccount
+    name: environmentconfig-creator
+    namespace: hsp-addons
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-environmentconfig
+  namespace: hsp-addons
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+    # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+    kubectl-version: v1.31.3
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: environmentconfig-creator
+    spec:
+      serviceAccountName: environmentconfig-creator
+      restartPolicy: OnFailure
+      containers:
+        - name: create-environmentconfig
+          image: registry.k8s.io/kubectl:v1.31.3
+          command:
+            - /bin/sh
+            - -c
+            - |
+              set -e
+              
+              echo "Reading ConfigMap hsp-addons..."
+              
+              # Get all keys from the ConfigMap
+              KEYS=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath='{.data}' | jq -r 'keys[]')
+              
+              # Start building the EnvironmentConfig manifest
+              cat <<EOF > /tmp/environmentconfig.yaml
+              apiVersion: apiextensions.crossplane.io/v1beta1
+              kind: EnvironmentConfig
+              metadata:
+                name: hsp-addons
+              data:
+              EOF
+              
+              # Add each ConfigMap key-value pair to the EnvironmentConfig
+              for KEY in $KEYS; do
+                echo "Processing key: $KEY"
+                VALUE=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath="{.data.$KEY}")
+                
+                # Add the key-value pair to the EnvironmentConfig
+                # The value is added as a string in the data section
+                echo "  $KEY: |" >> /tmp/environmentconfig.yaml
+                echo "$VALUE" | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+              done
+              
+              echo "Generated EnvironmentConfig:"
+              cat /tmp/environmentconfig.yaml
+              
+              echo ""
+              echo "Applying EnvironmentConfig..."
+              kubectl apply -f /tmp/environmentconfig.yaml
+              
+              echo "EnvironmentConfig created successfully!"
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
+      nodeSelector:
+        node-type: system
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
