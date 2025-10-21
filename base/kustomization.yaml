@@ -2,15 +2,11 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
+  - argo-cd
   - crds
-  - helm-charts
+  - aws
   - crossplane
-  - letsencrypt-cert-issuer.yaml
-  - karpenter-ec2nodeclass.yaml
-  - karpenter-nodepool.yaml
-  - kyverno-aws-lbc-pod-identity-policy.yaml
-  - kyverno-cert-manager-pod-identity-policy.yaml
-  - kyverno-karpenter-pod-identity-policy.yaml
-  - kyverno-ebs-csi-controller-pod-identity-policy.yaml
-  - kyverno-external-dns-pod-identity-policy.yaml
-  - cert-manager-restart-job.yaml
+  - karpenter
+  - kyverno
+  - kube-prometheus-stack
+  - cert-manager
