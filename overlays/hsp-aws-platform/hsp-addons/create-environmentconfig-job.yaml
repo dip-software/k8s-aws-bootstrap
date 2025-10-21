@@ -144,11 +144,11 @@ spec:
                 # Try to parse as JSON and convert to YAML, otherwise use as-is
                 if echo "$VALUE" | jq -e . >/dev/null 2>&1; then
                   echo "  $KEY:" >> /tmp/environmentconfig.yaml
-                  echo "$VALUE" | yq eval -P - | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                  # Use yq with string-tag option to preserve strings and prevent number coercion
+                  echo "$VALUE" | yq eval -P --unwrapScalar=false - | sed 's/^/    /' >> /tmp/environmentconfig.yaml
                 else
-                  # Not JSON, add as string
-                  echo "  $KEY: |" >> /tmp/environmentconfig.yaml
-                  echo "$VALUE" | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                  # Not JSON, add as string with quotes to preserve leading zeros
+                  echo "  $KEY: \"$(echo "$VALUE" | tr -d '\n')\"" >> /tmp/environmentconfig.yaml
                 fi
               done
               
