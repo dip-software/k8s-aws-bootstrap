@@ -1,0 +1,8 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - cluster-role-binding.yaml
+  - deployment-runtime-config.yaml
+  - provider-config.yaml
+  - provider.yaml

@@ -1,0 +1,11 @@
+apiVersion: pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-kubernetes
+  annotations:
+    "argocd.argoproj.io/sync-wave": "20"
+spec:
+  # TODO: Update to latest version when available
+  package: ghcr.io/crossplane-contrib/provider-kubernetes:v1.0.0
+  runtimeConfigRef:
+    name: provider-kubernetes

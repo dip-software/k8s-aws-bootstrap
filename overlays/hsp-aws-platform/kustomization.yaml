@@ -6,3 +6,4 @@ resources:
   - eso
   - vpa
   - hsp-addons
+  - provider-kubernetes
