@@ -92,6 +92,13 @@ spec:
               wget -O /tools/jq https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${JQ_ARCH}
               chmod +x /tools/jq
               
+              # Download yq
+              # renovate: datasource=github-releases depName=mikefarah/yq
+              YQ_VERSION=v4.44.3
+              echo "Downloading yq ${YQ_VERSION} for ${KUBECTL_ARCH}..."
+              wget -O /tools/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${KUBECTL_ARCH}
+              chmod +x /tools/yq
+              
               echo "Tools installed successfully"
           volumeMounts:
             - name: tools
@@ -134,12 +141,18 @@ spec:
                 echo "Processing key: $KEY"
                 VALUE=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath="{.data.$KEY}")
                 
-                # Add the key-value pair to the EnvironmentConfig
-                # The value is added as a string in the data section
-                echo "  $KEY: |" >> /tmp/environmentconfig.yaml
-                echo "$VALUE" | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                # Try to parse as JSON and convert to YAML, otherwise use as-is
+                if echo "$VALUE" | jq -e . >/dev/null 2>&1; then
+                  echo "  $KEY:" >> /tmp/environmentconfig.yaml
+                  echo "$VALUE" | yq eval -P - | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                else
+                  # Not JSON, add as string
+                  echo "  $KEY: |" >> /tmp/environmentconfig.yaml
+                  echo "$VALUE" | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                fi
               done
               
+              echo ""
               echo "Generated EnvironmentConfig:"
               cat /tmp/environmentconfig.yaml
               
