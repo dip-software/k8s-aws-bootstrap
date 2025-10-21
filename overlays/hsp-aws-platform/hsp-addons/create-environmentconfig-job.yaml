@@ -39,8 +39,6 @@ metadata:
     argocd.argoproj.io/sync-wave: "21"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
-    # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
-    kubectl-version: v1.31.3
 spec:
   ttlSecondsAfterFinished: 300
   backoffLimit: 3
@@ -51,14 +49,41 @@ spec:
     spec:
       serviceAccountName: environmentconfig-creator
       restartPolicy: OnFailure
+      initContainers:
+        - name: install-kubectl
+          # renovate: datasource=docker depName=alpine versioning=docker
+          image: alpine:3.21
+          command:
+            - sh
+            - -c
+            - |
+              # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+              KUBECTL_VERSION=v1.31.3
+              wget -O /tools/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+              chmod +x /tools/kubectl
+              wget -O /tools/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+              chmod +x /tools/jq
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 100m
+              memory: 64Mi
       containers:
         - name: create-environmentconfig
-          image: registry.k8s.io/kubectl:v1.31.3
+          # renovate: datasource=docker depName=alpine versioning=docker
+          image: alpine:3.21
           command:
-            - /bin/sh
+            - sh
             - -c
             - |
               set -e
+              
+              export PATH="/tools:$PATH"
               
               echo "Reading ConfigMap hsp-addons..."
               
@@ -93,6 +118,9 @@ spec:
               kubectl apply -f /tmp/environmentconfig.yaml
               
               echo "EnvironmentConfig created successfully!"
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
           resources:
             requests:
               cpu: 10m
@@ -100,6 +128,9 @@ spec:
             limits:
               cpu: 100m
               memory: 64Mi
+      volumes:
+        - name: tools
+          emptyDir: {}
       nodeSelector:
         node-type: system
       tolerations:
