@@ -153,14 +153,32 @@ spec:
               done
               
               echo ""
-              echo "Generated EnvironmentConfig:"
+              echo "=========================================="
+              echo "Complete EnvironmentConfig manifest:"
+              echo "=========================================="
               cat /tmp/environmentconfig.yaml
+              echo "=========================================="
               
               echo ""
               echo "Applying EnvironmentConfig..."
-              kubectl apply -f /tmp/environmentconfig.yaml
+              if ! kubectl apply -f /tmp/environmentconfig.yaml 2>&1; then
+                echo ""
+                echo "ERROR: Failed to apply EnvironmentConfig!"
+                echo "Checking if the resource exists..."
+                kubectl get environmentconfig hsp-addons -o yaml || echo "EnvironmentConfig does not exist"
+                echo ""
+                echo "Checking CRD..."
+                kubectl get crd environmentconfigs.apiextensions.crossplane.io || echo "CRD does not exist"
+                echo ""
+                echo "Last 20 lines of the generated manifest:"
+                tail -20 /tmp/environmentconfig.yaml
+                exit 1
+              fi
               
+              echo ""
               echo "EnvironmentConfig created successfully!"
+              echo "Verifying..."
+              kubectl get environmentconfig hsp-addons -o yaml
           volumeMounts:
             - name: tools
               mountPath: /tools
