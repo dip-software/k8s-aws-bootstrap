@@ -4,7 +4,7 @@ metadata:
   name: cert-manager-restarter
   namespace: cert-manager
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 ---
@@ -14,7 +14,7 @@ metadata:
   name: cert-manager-restarter
   namespace: cert-manager
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 rules:
@@ -35,7 +35,7 @@ metadata:
   name: cert-manager-restarter-kube-system
   namespace: kube-system
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 rules:
@@ -50,7 +50,7 @@ metadata:
   name: cert-manager-restarter
   namespace: cert-manager
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 roleRef:
@@ -68,7 +68,7 @@ metadata:
   name: cert-manager-restarter-kube-system
   namespace: kube-system
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 roleRef:
@@ -86,7 +86,7 @@ metadata:
   name: cert-manager-restarter
   namespace: cert-manager
   annotations:
-    argocd.argoproj.io/sync-wave: "5"
+    argocd.argoproj.io/sync-wave: "6"
     argocd.argoproj.io/hook: PostSync
     argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
 spec:
