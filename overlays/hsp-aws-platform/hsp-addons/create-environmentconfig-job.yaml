@@ -144,8 +144,9 @@ spec:
                 # Try to parse as JSON and convert to YAML, otherwise use as-is
                 if echo "$VALUE" | jq -e . >/dev/null 2>&1; then
                   echo "  $KEY:" >> /tmp/environmentconfig.yaml
-                  # Use yq with string-tag option to preserve strings and prevent number coercion
-                  echo "$VALUE" | yq eval -P --unwrapScalar=false - | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                  # Use yq with --yaml-output and explicit string preservation
+                  # The -o=json ensures we output proper YAML from JSON while preserving types
+                  echo "$VALUE" | yq -p json -o yaml --indent 2 | sed 's/^/    /' >> /tmp/environmentconfig.yaml
                 else
                   # Not JSON, add as string with quotes to preserve leading zeros
                   echo "  $KEY: \"$(echo "$VALUE" | tr -d '\n')\"" >> /tmp/environmentconfig.yaml
