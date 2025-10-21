@@ -148,8 +148,17 @@ spec:
                   # The -o=json ensures we output proper YAML from JSON while preserving types
                   echo "$VALUE" | yq -p json -o yaml --indent 2 | sed 's/^/    /' >> /tmp/environmentconfig.yaml
                 else
-                  # Not JSON, add as string with quotes to preserve leading zeros
-                  echo "  $KEY: \"$(echo "$VALUE" | tr -d '\n')\"" >> /tmp/environmentconfig.yaml
+                  # Not JSON, add as string
+                  # Remove any trailing newlines and whitespace
+                  CLEAN_VALUE=$(echo "$VALUE" | xargs)
+                  # Check if value looks like it needs quoting (starts with 0, contains special chars, etc)
+                  if [[ "$CLEAN_VALUE" =~ ^0 ]] || [[ "$CLEAN_VALUE" =~ ^[0-9]+$ ]]; then
+                    # Quote it to preserve it as a string
+                    echo "  $KEY: \"$CLEAN_VALUE\"" >> /tmp/environmentconfig.yaml
+                  else
+                    # Safe to use without quotes
+                    echo "  $KEY: $CLEAN_VALUE" >> /tmp/environmentconfig.yaml
+                  fi
                 fi
               done
               
