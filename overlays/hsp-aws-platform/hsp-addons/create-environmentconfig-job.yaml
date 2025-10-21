@@ -127,14 +127,14 @@ spec:
               # Get all keys from the ConfigMap
               KEYS=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath='{.data}' | jq -r 'keys[]')
               
-              # Start building the EnvironmentConfig manifest
-              cat <<EOF > /tmp/environmentconfig.yaml
+              # Start building the EnvironmentConfig manifest (without indentation in heredoc)
+              cat > /tmp/environmentconfig.yaml <<'EOFMANIFEST'
               apiVersion: apiextensions.crossplane.io/v1beta1
               kind: EnvironmentConfig
               metadata:
                 name: hsp-addons
               data:
-              EOF
+              EOFMANIFEST
               
               # Add each ConfigMap key-value pair to the EnvironmentConfig
               for KEY in $KEYS; do
@@ -161,22 +161,47 @@ spec:
               
               echo ""
               echo "Applying EnvironmentConfig..."
-              if ! kubectl apply -f /tmp/environmentconfig.yaml 2>&1; then
+              set +e  # Don't exit immediately on error
+              APPLY_OUTPUT=$(kubectl apply -f /tmp/environmentconfig.yaml 2>&1)
+              APPLY_EXIT_CODE=$?
+              set -e
+              
+              if [ $APPLY_EXIT_CODE -ne 0 ]; then
                 echo ""
+                echo "=========================================="
                 echo "ERROR: Failed to apply EnvironmentConfig!"
+                echo "=========================================="
+                echo "kubectl exit code: $APPLY_EXIT_CODE"
+                echo ""
+                echo "kubectl output:"
+                echo "$APPLY_OUTPUT"
+                echo ""
+                echo "=========================================="
+                echo "Diagnostic information:"
+                echo "=========================================="
+                echo ""
                 echo "Checking if the resource exists..."
-                kubectl get environmentconfig hsp-addons -o yaml || echo "EnvironmentConfig does not exist"
+                kubectl get environmentconfig hsp-addons -o yaml 2>&1 || echo "EnvironmentConfig does not exist"
                 echo ""
                 echo "Checking CRD..."
-                kubectl get crd environmentconfigs.apiextensions.crossplane.io || echo "CRD does not exist"
+                kubectl get crd environmentconfigs.apiextensions.crossplane.io 2>&1 || echo "CRD does not exist"
                 echo ""
-                echo "Last 20 lines of the generated manifest:"
-                tail -20 /tmp/environmentconfig.yaml
+                echo "Checking all CRDs related to crossplane..."
+                kubectl get crd | grep crossplane || echo "No crossplane CRDs found"
+                echo ""
+                echo "Last 30 lines of the generated manifest:"
+                tail -30 /tmp/environmentconfig.yaml
+                echo ""
+                echo "=========================================="
+                echo "Sleeping for 300 seconds to allow debugging..."
+                sleep 300
                 exit 1
               fi
               
               echo ""
+              echo "=========================================="
               echo "EnvironmentConfig created successfully!"
+              echo "=========================================="
               echo "Verifying..."
               kubectl get environmentconfig hsp-addons -o yaml
           volumeMounts:
