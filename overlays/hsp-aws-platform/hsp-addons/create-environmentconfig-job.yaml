@@ -57,12 +57,42 @@ spec:
             - sh
             - -c
             - |
+              set -e
+              
+              # Detect architecture
+              ARCH=$(uname -m)
+              case $ARCH in
+                x86_64)
+                  KUBECTL_ARCH="amd64"
+                  JQ_ARCH="amd64"
+                  ;;
+                aarch64|arm64)
+                  KUBECTL_ARCH="arm64"
+                  JQ_ARCH="arm64"
+                  ;;
+                *)
+                  echo "Unsupported architecture: $ARCH"
+                  exit 1
+                  ;;
+              esac
+              
+              echo "Detected architecture: $ARCH (kubectl: $KUBECTL_ARCH, jq: $JQ_ARCH)"
+              
+              # Download kubectl
               # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
               KUBECTL_VERSION=v1.31.3
-              wget -O /tools/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/amd64/kubectl
+              echo "Downloading kubectl ${KUBECTL_VERSION} for ${KUBECTL_ARCH}..."
+              wget -O /tools/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${KUBECTL_ARCH}/kubectl
               chmod +x /tools/kubectl
-              wget -O /tools/jq https://github.com/jqlang/jq/releases/download/jq-1.7.1/jq-linux-amd64
+              
+              # Download jq
+              # renovate: datasource=github-releases depName=jqlang/jq
+              JQ_VERSION=1.7.1
+              echo "Downloading jq ${JQ_VERSION} for ${JQ_ARCH}..."
+              wget -O /tools/jq https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${JQ_ARCH}
               chmod +x /tools/jq
+              
+              echo "Tools installed successfully"
           volumeMounts:
             - name: tools
               mountPath: /tools
