@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - kyverno-argocd-app.yaml
+  - kyverno-app.yaml
   - kyverno-aws-lbc-pod-identity-policy.yaml
   - kyverno-cert-manager-pod-identity-policy.yaml
   - kyverno-karpenter-pod-identity-policy.yaml

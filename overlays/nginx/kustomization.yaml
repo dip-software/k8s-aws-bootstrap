@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   - ../../base
-  - ingress-nginx-argocd-app.yaml
+  - ingress-nginx-app.yaml
   - wait-for-nginx-job.yaml
   - ingress-argocd.yaml

@@ -2,7 +2,7 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - amazon-eks-pod-identity-webhook-argocd-app.yaml
-  - aws-ebs-csi-driver-argocd-app.yaml
-  - aws-load-balancer-controller-argocd-app.yaml
-  - external-dns-argocd-app.yaml
+  - amazon-eks-pod-identity-webhook-app.yaml
+  - aws-ebs-csi-driver-app.yaml
+  - aws-load-balancer-controller-app.yaml
+  - external-dns-app.yaml

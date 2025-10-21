@@ -16,43 +16,43 @@ These workloads are configured with `CriticalAddonsOnly` tolerations to run ONLY
 1. **Karpenter Controller**
    - Critical for cluster functionality
    - Must be available before Karpenter nodes exist
-   - Configured in: `base/helm-charts/karpenter-argocd-app.yaml`
+   - Configured in: `base/karpenter/karpenter-app.yaml`
 
 2. **AWS Load Balancer Controller**
    - Critical for ingress and service load balancing
-   - Configured in: `overlays/nginx/aws-load-balancer-controller-argocd-app.yaml`
+   - Configured in: `base/aws/aws-load-balancer-controller-app.yaml`
 
 3. **cert-manager (all components)**
    - Critical for TLS certificate management
    - Includes controller, cainjector, and webhook
-   - Configured in: `base/helm-charts/cert-manager-argocd-app.yaml`
+   - Configured in: `base/cert-manager/cert-manager-app.yaml`
 
 4. **ArgoCD (all components)**
    - Critical for GitOps deployments and cluster management
    - Includes server, repo-server, and controller
-   - Configured in: `base/helm-charts/argocd-argocd-app.yaml`
+   - Configured in: `base/argo-cd/argocd-app.yaml`
 
 5. **AWS EBS CSI Driver Controller**
    - Critical for persistent volume provisioning
-   - Configured in: `base/helm-charts/aws-ebs-csi-driver-argocd-app.yaml`
+   - Configured in: `base/aws/aws-ebs-csi-driver-app.yaml`
 
 6. **Kyverno**
    - Critical for policy enforcement and admission control
-   - Configured in: `base/helm-charts/kyverno-argocd-app.yaml`
+   - Configured in: `base/kyverno/kyverno-app.yaml`
 
 7. **External DNS**
    - Critical for DNS record management
-   - Configured in: `overlays/nginx/external-dns-argocd-app.yaml`
+   - Configured in: `base/aws/external-dns-app.yaml`
 
 8. **Amazon EKS Pod Identity Webhook**
    - Critical for IRSA (IAM Roles for Service Accounts) functionality
    - Required by many other critical workloads for AWS IAM integration
-   - Configured in: `base/helm-charts/amazon-eks-pod-identity-webhook-argocd-app.yaml`
+   - Configured in: `base/aws/amazon-eks-pod-identity-webhook-app.yaml`
 
 9. **Prometheus Stack (all components)**
    - Critical for monitoring cluster health and critical workloads
    - Includes Prometheus, Grafana, Prometheus Operator, and kube-state-metrics
-   - Configured in: `base/helm-charts/kube-prometheus-stack-argocd-app.yaml`
+   - Configured in: `base/kube-prometheus-stack/kube-prometheus-stack-app.yaml`
 
 10. **CoreDNS** (K3s built-in)
     - **IMPORTANT**: CoreDNS runs automatically on control plane nodes
