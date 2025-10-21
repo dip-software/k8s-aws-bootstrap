@@ -18,6 +18,8 @@ spec:
       valuesObject:
         storageClasses:
           - name: gp3-encrypted
+            annotations:
+              storageclass.kubernetes.io/is-default-class: "true"
             volumeBindingMode: WaitForFirstConsumer
             reclaimPolicy: Delete
             parameters:
