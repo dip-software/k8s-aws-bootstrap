@@ -1,0 +1,77 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vertical-pod-autoscaler
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://cowboysysop.github.io/charts/
+    # renovate: datasource=helm registryUrl=https://cowboysysop.github.io/charts/ depName=vertical-pod-autoscaler
+    targetRevision: 9.8.0
+    chart: vertical-pod-autoscaler
+    helm:
+      valuesObject:
+        # Admissioncontroller configuration
+        admissioncontroller:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 50m
+              memory: 200Mi
+            limits:
+              memory: 500Mi
+        
+        # Recommender configuration
+        recommender:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 50m
+              memory: 500Mi
+            limits:
+              memory: 1000Mi
+        
+        # Updater configuration
+        updater:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 50m
+              memory: 500Mi
+            limits:
+              cpu: 200m
+              memory: 1000Mi
+        
+        # Metrics
+        metrics:
+          serviceMonitor:
+            enabled: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vpa-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
