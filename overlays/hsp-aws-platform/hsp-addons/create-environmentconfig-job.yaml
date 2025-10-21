@@ -141,16 +141,17 @@ spec:
                 echo "Processing key: $KEY"
                 VALUE=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath="{.data.$KEY}")
                 
-                # Try to parse as JSON and convert to YAML, otherwise use as-is
-                if echo "$VALUE" | jq -e . >/dev/null 2>&1; then
-                  # It's valid JSON - convert to YAML while preserving strings with tostring
+                # Check if it's a JSON object or array (not just a scalar)
+                if echo "$VALUE" | jq -e 'type | . == "object" or . == "array"' >/dev/null 2>&1; then
+                  # It's valid JSON object/array - convert to YAML
                   echo "  $KEY:" >> /tmp/environmentconfig.yaml
-                  # Force all values to be treated as strings in the JSON, then convert to YAML
-                  echo "$VALUE" | jq 'walk(if type == "number" or type == "boolean" then . else tostring end)' | yq -p json -o yaml --indent 2 | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                  echo "$VALUE" | yq -p json -o yaml -I 2 -N | sed 's/^/    /' >> /tmp/environmentconfig.yaml
                 else
-                  # Not JSON, add as string - always quote to be safe
-                  CLEAN_VALUE=$(echo "$VALUE" | xargs)
-                  echo "  $KEY: \"$CLEAN_VALUE\"" >> /tmp/environmentconfig.yaml
+                  # Not a JSON object/array (could be scalar, string, or invalid JSON) - treat as string
+                  CLEAN_VALUE=$(echo "$VALUE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                  # Escape any double quotes in the value
+                  ESCAPED_VALUE=$(echo "$CLEAN_VALUE" | sed 's/"/\\"/g')
+                  echo "  $KEY: \"$ESCAPED_VALUE\"" >> /tmp/environmentconfig.yaml
                 fi
               done
               
