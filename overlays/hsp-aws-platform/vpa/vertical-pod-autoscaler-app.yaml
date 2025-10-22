@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: https://cowboysysop.github.io/charts/
     # renovate: datasource=helm registryUrl=https://cowboysysop.github.io/charts/ depName=vertical-pod-autoscaler
-    targetRevision: 9.8.0
+    targetRevision: 11.1.1
     chart: vertical-pod-autoscaler
     helm:
       valuesObject:
