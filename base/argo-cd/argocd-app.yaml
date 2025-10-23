@@ -11,7 +11,6 @@ spec:
   project: default
   source:
     repoURL: oci://ghcr.io/argoproj/argo-helm/argo-cd
-    # renovate: datasource=github-releases depName=argoproj/argo-helm
     targetRevision: 8.6.3
     path: .
     helm:

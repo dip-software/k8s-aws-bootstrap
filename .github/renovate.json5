@@ -2,4 +2,23 @@
   $schema: "https://docs.renovatebot.com/renovate-schema.json",
   labels: ["dependencies"],
   extends: ["config:best-practices", ":disableDependencyDashboard"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "fileMatch": [".*\\.ya?ml$"],
+      "matchStrings": [
+        "repoURL:\\s*oci://(?<depName>[^\\s]+)[\\s\\S]*?\\btargetRevision:\\s*(?<currentValue>\\S+)"
+      ],
+      "datasourceTemplate": "docker",
+      "versioningTemplate": "semver",
+      "extractVersionTemplate": null
+    }
+  ],
+  "packageRules": [
+    {
+      "matchDatasources": ["docker"],
+      "matchDepNames": ["ghcr.io/argoproj/argo-helm/argo-cd"],
+      "groupName": "argo-cd chart (OCI)"
+    }
+  ]
 }
