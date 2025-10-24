@@ -18,13 +18,6 @@ spec:
       valuesObject:
         alertmanager:
           alertmanagerSpec:
-            # Run on system nodes (critical component)
-            nodeSelector:
-              node-type: system
-            tolerations:
-            - key: CriticalAddonsOnly
-              operator: Exists
-            affinity:
             resources:
               requests:
                 cpu: 5m
@@ -34,13 +27,6 @@ spec:
                 memory: 50Mi
         prometheus:
           prometheusSpec:
-            # Run on system nodes (critical component)
-            nodeSelector:
-              node-type: system
-            tolerations:
-            - key: CriticalAddonsOnly
-              operator: Exists
-            affinity:
             resources:
               requests:
                 cpu: 15m
@@ -49,13 +35,6 @@ spec:
                 cpu: 200m
                 memory: 682Mi
         grafana:
-          # Run on system nodes (critical component)
-          nodeSelector:
-            node-type: system
-          tolerations:
-          - key: CriticalAddonsOnly
-            operator: Exists
-          affinity:
           resources:
             requests:
               cpu: 10m
@@ -64,13 +43,6 @@ spec:
               cpu: 100m
               memory: 734Mi
         prometheusOperator:
-          # Run on system nodes (critical component)
-          nodeSelector:
-            node-type: system
-          tolerations:
-          - key: CriticalAddonsOnly
-            operator: Exists
-          affinity:
           resources:
             requests:
               cpu: 5m
@@ -80,20 +52,7 @@ spec:
               memory: 50Mi
           admissionWebhooks:
             patch:
-              # Run on system nodes (critical component)
-              nodeSelector:
-                node-type: system
-              tolerations:
-              - key: CriticalAddonsOnly
-                operator: Exists
-              affinity:
         kube-state-metrics:
-          # Run on system nodes (critical component)
-          nodeSelector:
-            node-type: system
-          tolerations:
-          - key: CriticalAddonsOnly
-            operator: Exists
           resources:
             requests:
               cpu: 5m
