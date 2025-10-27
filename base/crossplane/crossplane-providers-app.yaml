@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: oci://ghcr.io/philips-software/helm-charts/crossplane-providers
     # renovate: datasource=github-releases depName=philips-software/helm-charts
-    targetRevision: 0.0.16
+    targetRevision: 0.0.17
     path: .
     helm:
       values: |
@@ -29,10 +29,10 @@ spec:
             roleArn: ${CROSSPLANE_PROVIDER_AWS_IAM_ROLE_ARN}
             resources:
               requests:
-                cpu: 50m
+                cpu: 100m
                 memory: 400Mi
               limits:
-                memory: 512Mi 
+                memory: 640Mi 
   destination:
     server: https://kubernetes.default.svc
     namespace: crossplane-system
