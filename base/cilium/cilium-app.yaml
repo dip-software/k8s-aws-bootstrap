@@ -30,7 +30,7 @@ spec:
         kubeProxyReplacement: true
         
         # API Server Configuration
-        k8sServiceHost: "${NLB_DNS_NAME}"
+        k8sServiceHost: "${CLUSTER_HOST}"
         k8sServicePort: "6443"
         
         # Socket-level Load Balancing
