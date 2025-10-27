@@ -13,7 +13,7 @@ spec:
     repoURL: https://prometheus-community.github.io/helm-charts
     chart: kube-prometheus-stack
     # renovate: datasource=helm registryUrl=https://prometheus-community.github.io/helm-charts depName=kube-prometheus-stack
-    targetRevision: 78.4.0
+    targetRevision: 78.5.0
     helm:
       valuesObject:
         alertmanager:
