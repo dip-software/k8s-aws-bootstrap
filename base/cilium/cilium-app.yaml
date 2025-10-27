@@ -127,6 +127,8 @@ spec:
             operator: Exists
           - key: CriticalAddonsOnly
             operator: Exists
+          - key: node.cilium.io/agent-not-ready
+            operator: Exists
         
         resources:
           limits:
