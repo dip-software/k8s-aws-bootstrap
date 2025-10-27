@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - argo-cd
+  - cilium
   - crds
   - aws
   - crossplane
