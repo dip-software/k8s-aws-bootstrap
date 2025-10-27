@@ -59,6 +59,8 @@ spec:
           relay:
             enabled: true
             replicas: 1
+            nodeSelector:
+              node-type: system
             tolerations:
               - key: node.kubernetes.io/not-ready
                 operator: Exists
@@ -69,6 +71,8 @@ spec:
           ui:
             enabled: true
             replicas: 1
+            nodeSelector:
+              node-type: system
             tolerations:
               - key: node.kubernetes.io/not-ready
                 operator: Exists
