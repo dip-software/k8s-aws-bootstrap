@@ -65,6 +65,19 @@ spec:
               memory: 20Mi
             limits:
               memory: 40Mi
+              
+        # Configure startupapicheck with the same node placement
+        startupapicheck:
+          nodeSelector: {node-type: system}
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          resources:
+            requests:
+              cpu: 10m
+              memory: 20Mi
+            limits:
+              memory: 40Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
