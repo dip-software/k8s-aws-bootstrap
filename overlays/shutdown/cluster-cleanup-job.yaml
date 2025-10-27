@@ -21,6 +21,10 @@ rules:
 - apiGroups: [""]
   resources: ["nodes"]
   verbs: ["get", "list"]
+# Pod management for restarting Karpenter
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["get", "list", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -125,6 +129,27 @@ spec:
             fi
           else
             echo "⚠️  Bootstrap application not found, skipping..."
+          fi
+          echo ""
+          
+          # Step 2.5: Restart Karpenter to ensure it picks up the NodePool changes
+          echo "Step 2.5: Restarting Karpenter to prevent new node spawning..."
+          if kubectl get deployment karpenter -n karpenter >/dev/null 2>&1; then
+            echo "Restarting Karpenter deployment..."
+            kubectl rollout restart deployment/karpenter -n karpenter
+            
+            echo "Waiting for rollout to complete..."
+            kubectl rollout status deployment/karpenter -n karpenter --timeout=2m || true
+            
+            KARPENTER_READY=$(kubectl get pods -n karpenter -l app.kubernetes.io/name=karpenter --no-headers 2>/dev/null | grep -c "Running" || echo "0")
+            if [ "${KARPENTER_READY}" -gt 0 ]; then
+              echo "✅ Karpenter restarted successfully (${KARPENTER_READY} pod(s) running)"
+            else
+              echo "⚠️  Karpenter may not have restarted properly"
+              kubectl get pods -n karpenter -l app.kubernetes.io/name=karpenter
+            fi
+          else
+            echo "⚠️  Karpenter deployment not found, skipping restart..."
           fi
           echo ""
           
