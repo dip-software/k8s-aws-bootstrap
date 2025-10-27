@@ -18,6 +18,8 @@ data:
     ${AWS_ACCOUNT_ID}
   region: |
     ${AWS_REGION}
+  partition: |
+    ${AWS_PARTITION}
   enabledPullThroughRegistries: |
     []
   eks: |
