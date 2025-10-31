@@ -3,6 +3,6 @@ kind: Kustomization
 
 resources:
   - crossplane-app.yaml
-  - crossplane-providers-app.yaml
+  - crossplane-providers-aws-app.yaml
   - crossplane-functions-app.yaml
   - providerconfig-aws.yaml
