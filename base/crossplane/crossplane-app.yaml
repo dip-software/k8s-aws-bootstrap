@@ -16,6 +16,8 @@ spec:
     targetRevision: v2.0.2
     helm:
       valuesObject:
+        args:
+          - --enable-operations
         metrics:
           enabled: true
   destination:
