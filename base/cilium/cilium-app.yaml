@@ -51,6 +51,10 @@ spec:
           algorithm: random
           mode: snat
         
+        # Gateway API Configuration
+        gatewayAPI:
+          enabled: true
+          
         # Hubble Observability Platform
         hubble:
           enabled: true
