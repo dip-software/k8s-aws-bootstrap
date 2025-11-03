@@ -9,6 +9,11 @@ metadata:
     service.beta.kubernetes.io/aws-load-balancer-type: nlb
 spec:
   gatewayClassName: cilium
+  infrastructure:
+    annotations:
+      service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
+      service.beta.kubernetes.io/aws-load-balancer-type: nlb
+      service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
   listeners:
     - name: http
       protocol: HTTP

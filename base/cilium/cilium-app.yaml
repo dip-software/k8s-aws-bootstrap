@@ -55,12 +55,6 @@ spec:
         gatewayAPI:
           enabled: true
           externalTrafficPolicy: Local
-          hostNetwork:
-            enabled: true
-          serviceAnnotations:
-            service.beta.kubernetes.io/aws-load-balancer-scheme: internet-facing
-            service.beta.kubernetes.io/aws-load-balancer-type: nlb
-            service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
           
         # Hubble Observability Platform
         hubble:
