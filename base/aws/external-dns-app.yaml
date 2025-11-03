@@ -16,6 +16,10 @@ spec:
     targetRevision: 1.19.0
     helm:
       valuesObject:
+        sources:
+          - service
+          - ingress
+          - gateway-httproute
         # Require critical addon nodes for external-dns (critical)
         nodeSelector:
           node-type: system
