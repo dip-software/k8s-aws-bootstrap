@@ -1,11 +1,11 @@
-# Shared Gateway for *.obs-eu-dev.hsp.philips.com
+# Shared Gateway
 
-This directory contains the shared Gateway API configuration for `*.obs-eu-dev.hsp.philips.com`.
+This directory contains the shared Gateway API configuration.
 
 ## Components
 
 - **Namespace**: `gateway` - Dedicated namespace for the shared gateway
-- **Certificate**: Wildcard certificate for `*.obs-eu-dev.hsp.philips.com` issued by Let's Encrypt
+- **Certificate**: Wildcard certificate for `*.${CLUSTER_FQDN}` issued by Let's Encrypt
 - **Gateway**: Shared gateway with HTTP (port 80) and HTTPS (port 443) listeners
 
 ## Gateway Details
@@ -34,7 +34,7 @@ spec:
     - name: shared-gateway
       namespace: gateway
   hostnames:
-    - "my-app.obs-eu-dev.hsp.philips.com"
+    - "my-app.${CLUSTER_FQDN}"
   rules:
     - matches:
         - path:
@@ -59,7 +59,7 @@ spec:
       namespace: gateway
       sectionName: http
   hostnames:
-    - "my-app.obs-eu-dev.hsp.philips.com"
+    - "my-app.${CLUSTER_FQDN}"
   rules:
     - filters:
         - type: RequestRedirect
@@ -78,7 +78,7 @@ spec:
       namespace: gateway
       sectionName: https
   hostnames:
-    - "my-app.obs-eu-dev.hsp.philips.com"
+    - "my-app.${CLUSTER_FQDN}"
   rules:
     - matches:
         - path:
@@ -94,26 +94,29 @@ spec:
 The wildcard certificate is automatically managed by cert-manager using Let's Encrypt with DNS01 validation via Route53.
 
 - **Issuer**: `letsencrypt-prod` (ClusterIssuer)
-- **Secret**: `obs-eu-dev-wildcard-tls` (in `gateway` namespace)
+- **Secret**: `${RESOURCE_PREFIX}-wildcard-tls` (in `gateway` namespace)
 - **Domains**: 
-  - `*.obs-eu-dev.hsp.philips.com`
-  - `obs-eu-dev.hsp.philips.com`
+  - `*.${CLUSTER_FQDN}`
+  - `${CLUSTER_FQDN}`
 
 ## Verification
 
 Check gateway status:
+
 ```bash
 kubectl get gateway -n gateway
 kubectl describe gateway shared-gateway -n gateway
 ```
 
 Check certificate status:
+
 ```bash
 kubectl get certificate -n gateway
-kubectl describe certificate obs-eu-dev-wildcard -n gateway
+kubectl describe certificate ${RESOURCE_PREFIX}-wildcard -n gateway
 ```
 
 Check the gateway's external address:
+
 ```bash
 kubectl get gateway shared-gateway -n gateway -o jsonpath='{.status.addresses[0].value}'
 ```

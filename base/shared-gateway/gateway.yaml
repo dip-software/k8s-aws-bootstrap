@@ -23,7 +23,7 @@ spec:
     - name: https
       protocol: HTTPS
       port: 443
-      hostname: "*.obs-eu-dev.hsp.philips.com"
+      hostname: "*.${CLUSTER_FQDN}"
       allowedRoutes:
         namespaces:
           from: All
@@ -31,5 +31,5 @@ spec:
         mode: Terminate
         certificateRefs:
           - kind: Secret
-            name: obs-eu-dev-wildcard-tls
+            name: ${RESOURCE_PREFIX}-wildcard-tls
             namespace: gateway
