@@ -54,6 +54,7 @@ spec:
         # Gateway API Configuration
         gatewayAPI:
           enabled: true
+          externalTrafficPolicy: Local
           
         # Hubble Observability Platform
         hubble:
