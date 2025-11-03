@@ -16,6 +16,9 @@ spec:
     chart: cert-manager
     helm:
       valuesObject:
+        config:
+          enableGatewayAPI: true
+        
         crds:
           enabled: true
         
