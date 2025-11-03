@@ -44,7 +44,7 @@ spec:
         bpf:
           masquerade: true
           tproxy: true
-          lbExternalClusterIP: false
+          lbExternalClusterIP: true
         
         # Load Balancer Configuration
         loadBalancer:
@@ -54,7 +54,7 @@ spec:
         # Gateway API Configuration
         gatewayAPI:
           enabled: true
-          externalTrafficPolicy: Local
+          externalTrafficPolicy: Cluster
           
         # Hubble Observability Platform
         hubble:

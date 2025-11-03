@@ -1,0 +1,46 @@
+apiVersion: "cilium.io/v2"
+kind: CiliumNetworkPolicy
+metadata:
+  name: allow-all-with-visibility
+  namespace: argocd
+spec:
+  endpointSelector: {}
+  ingress:
+  - fromEntities:
+    - all
+    - world
+    - cluster
+  - fromEndpoints:
+    - {}
+  - fromEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "80"
+        protocol: TCP
+      - port: "443"
+        protocol: TCP
+      rules:
+        http:
+        - {}  # Only L7 visibility on external-facing ports
+  egress:
+  - toEntities:
+    - all
+    - world
+    - cluster
+  - toEndpoints:
+    - {}
+  - toEndpoints:
+    - {}
+    toPorts:
+    - ports:
+      - port: "443"
+        protocol: TCP
+      - port: "80"
+        protocol: TCP
+      rules:
+        http:
+        - {}  # Only L7 visibility on external HTTP/HTTPS
+  - toFQDNs:
+    - matchPattern: "*"
+
