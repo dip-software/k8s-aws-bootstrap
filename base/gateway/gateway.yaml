@@ -6,6 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "7"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    service.beta.kubernetes.io/aws-load-balancer-type: nlb
 spec:
   gatewayClassName: cilium
   listeners:
