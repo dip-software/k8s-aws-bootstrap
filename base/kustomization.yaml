@@ -11,3 +11,4 @@ resources:
   - kyverno
   - kube-prometheus-stack
   - cert-manager
+  - shared-gateway
