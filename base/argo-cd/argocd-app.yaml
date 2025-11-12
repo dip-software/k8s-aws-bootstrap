@@ -434,6 +434,14 @@ spec:
           - key: CriticalAddonsOnly
             operator: Exists
           
+          resources:
+            limits:
+              cpu: 20m
+              memory: 64Mi
+            requests:
+              cpu: 20m
+              memory: 32Mi
+          
           # Redis HA configuration
           ha:
             enabled: false
