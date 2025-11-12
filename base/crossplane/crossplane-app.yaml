@@ -13,7 +13,7 @@ spec:
     repoURL: https://charts.crossplane.io/stable
     chart: crossplane
     # renovate: datasource=github-releases depName=crossplane/crossplane
-    targetRevision: v2.1.0
+    targetRevision: v2.1.1
     helm:
       valuesObject:
         args:
