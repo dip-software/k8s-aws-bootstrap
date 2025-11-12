@@ -27,6 +27,13 @@ spec:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+        resources:
+          limits:
+            cpu: 20m
+            memory: 64Mi
+          requests:
+            cpu: 20m
+            memory: 32Mi
         serviceAccount:
           create: true
           name: external-dns
