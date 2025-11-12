@@ -64,11 +64,11 @@ spec:
           # NodeExporter should run on all nodes (DaemonSet), no node preference needed
           resources:
             requests:
-              cpu: 5m
-              memory: 12Mi
-            limits:
-              cpu: 50m
+              cpu: 10m
               memory: 24Mi
+            limits:
+              cpu: 20m
+              memory: 32Mi
   destination:
     server: https://kubernetes.default.svc
     namespace: prometheus
