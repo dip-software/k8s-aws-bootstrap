@@ -55,6 +55,17 @@ spec:
         gatewayAPI:
           enabled: true
           externalTrafficPolicy: Cluster
+        
+        # Envoy Configuration
+        envoy:
+          enabled: true
+          resources:
+            limits:
+              cpu: 50m
+              memory: 32Mi
+            requests:
+              cpu: 20m
+              memory: 24Mi
           
         # Hubble Observability Platform
         hubble:
@@ -71,6 +82,13 @@ spec:
                 operator: Exists
               - key: CriticalAddonsOnly
                 operator: Exists
+            resources:
+              limits:
+                cpu: 40m
+                memory: 32Mi
+              requests:
+                cpu: 20m
+                memory: 24Mi
           ui:
             enabled: true
             replicas: 1
@@ -83,6 +101,13 @@ spec:
                 operator: Exists
               - key: CriticalAddonsOnly
                 operator: Exists
+            resources:
+              limits:
+                cpu: 20m
+                memory: 32Mi
+              requests:
+                cpu: 10m
+                memory: 18Mi
           metrics:
             enabled:
               - dns
