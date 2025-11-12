@@ -23,6 +23,13 @@ spec:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+        resources:
+          limits:
+            cpu: 10m
+            memory: 32Mi
+          requests:
+            cpu: 10m
+            memory: 20Mi
         config:
           stsRegionalEndpoint: true
           defaultAwsRegion: ${AWS_REGION}
