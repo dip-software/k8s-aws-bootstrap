@@ -36,7 +36,6 @@ spec:
               cpu: 10m
               memory: 75Mi
             limits:
-              cpu: 100m
               memory: 150Mi
           serviceAccount:
             create: true
@@ -50,7 +49,6 @@ spec:
               cpu: 10m
               memory: 43Mi
             limits:
-              cpu: 100m
               memory: 86Mi
   destination:
     server: https://kubernetes.default.svc

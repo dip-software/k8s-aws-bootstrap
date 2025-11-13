@@ -22,7 +22,6 @@ spec:
               cpu: 50m
               memory: 184Mi
             limits:
-              cpu: 100m
               memory: 256Mi
         settings:
           # Enable faster sync for quicker node health detection

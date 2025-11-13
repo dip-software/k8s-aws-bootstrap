@@ -40,7 +40,6 @@ spec:
             cpu: 5m
             memory: 25Mi
           limits:
-            cpu: 50m
             memory: 80Mi
             
         # Configure cainjector with the same node placement

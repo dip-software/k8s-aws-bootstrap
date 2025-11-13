@@ -23,7 +23,6 @@ spec:
                 cpu: 5m
                 memory: 64Mi
               limits:
-                cpu: 100m
                 memory: 128Mi
         prometheus:
           prometheusSpec:
@@ -32,7 +31,6 @@ spec:
                 cpu: 15m
                 memory: 341Mi
               limits:
-                cpu: 200m
                 memory: 682Mi
         grafana:
           resources:
@@ -40,7 +38,6 @@ spec:
               cpu: 10m
               memory: 367Mi
             limits:
-              cpu: 100m
               memory: 734Mi
         prometheusOperator:
           resources:
@@ -48,7 +45,6 @@ spec:
               cpu: 5m
               memory: 25Mi
             limits:
-              cpu: 50m
               memory: 50Mi
           admissionWebhooks:
             patch:
@@ -58,7 +54,6 @@ spec:
               cpu: 5m
               memory: 19Mi
             limits:
-              cpu: 50m
               memory: 38Mi
         nodeExporter:
           # NodeExporter should run on all nodes (DaemonSet), no node preference needed
@@ -67,7 +62,6 @@ spec:
               cpu: 10m
               memory: 24Mi
             limits:
-              cpu: 20m
               memory: 32Mi
   destination:
     server: https://kubernetes.default.svc
