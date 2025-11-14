@@ -1,6 +1,6 @@
 # bootstrap
 
-This project provides a baseline configuration for dev clusters.
+This project provides a baseline configuration for Kubernetes clusters.
 
 ## Clean Cluster Destruction
 
