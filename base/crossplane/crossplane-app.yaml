@@ -27,6 +27,14 @@ spec:
         tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
+        
+        # rbacManager is also critical - schedule on system nodes
+        rbacManager:
+          nodeSelector:
+            node-type: system
+          tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
   destination:
     server: https://kubernetes.default.svc
     namespace: crossplane-system
