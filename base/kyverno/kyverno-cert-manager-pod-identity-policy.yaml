@@ -13,7 +13,7 @@ metadata:
       environment variable injected by the EKS Pod Identity webhook. Uses Audit mode 
       because cert-manager must start before the webhook (webhook depends on cert-manager for TLS certs).
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   validationFailureAction: Audit
   background: true
@@ -59,7 +59,7 @@ metadata:
       This policy audits that cert-manager controller pods are using the correct 
       service account that has the EKS role annotation for pod identity.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/sync-wave: "5"
 spec:
   validationFailureAction: Audit
   background: true

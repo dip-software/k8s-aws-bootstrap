@@ -4,7 +4,7 @@ metadata:
   name: crossplane-functions
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:

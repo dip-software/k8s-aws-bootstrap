@@ -13,7 +13,7 @@ metadata:
       environment variable injected by the EKS Pod Identity webhook. If the environment 
       variable is missing, the pod is rejected, allowing the webhook to retry the mutation.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   validationFailureAction: Enforce
   background: true
@@ -60,7 +60,7 @@ metadata:
       This policy ensures that EBS CSI Controller pods are using the correct 
       service account that has the EKS role annotation for pod identity.
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
-    argocd.argoproj.io/sync-wave: "3"
+    argocd.argoproj.io/sync-wave: "4"
 spec:
   validationFailureAction: Enforce
   background: true
