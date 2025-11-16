@@ -2,8 +2,6 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
 resources:
-  - ../gateway-api
-  - eso
-  - vpa
-  - hsp-addons
-  - provider-kubernetes
+  - ../../base
+  - shared-gateway
+  - httproute-argocd.yaml
