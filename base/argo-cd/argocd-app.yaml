@@ -23,6 +23,8 @@ spec:
         configs:
           params:
             application.namespaces: "*"
+            # TODO: revert once we migrate to Gateway API v1.4
+            server.insecure: "true"
           cm:
             application.resourceTrackingMethod: annotation
             resource.customizations: |
