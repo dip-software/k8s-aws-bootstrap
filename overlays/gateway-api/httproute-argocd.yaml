@@ -6,6 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "20"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    link.argocd.argoproj.io/external-link: https://argocd.${CLUSTER_FQDN}
 spec:
   parentRefs:
     - name: shared-gateway
