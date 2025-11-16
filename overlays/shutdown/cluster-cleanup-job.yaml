@@ -82,62 +82,8 @@ spec:
           fi
           echo ""
           
-          # Step 2: Switch Bootstrap App to Shutdown Overlay
-          echo "Step 2: Switching bootstrap app to shutdown overlay..."
-          if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
-            # Get current source path
-            CURRENT_PATH=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.source.path}')
-            echo "Current path: ${CURRENT_PATH}"
-            
-            # Switch to shutdown overlay
-            if [ "${CURRENT_PATH}" != "overlays/shutdown" ]; then
-              kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"overlays/shutdown"}}}'
-              echo "✅ Bootstrap app source path changed to 'overlays/shutdown'"
-              
-              # Trigger manual sync to apply shutdown overlay
-              echo "Triggering manual sync to apply shutdown overlay..."
-              kubectl patch application bootstrap -n argocd --type merge -p '{"operation":{"initiatedBy":{"username":"cluster-cleanup-job"},"sync":{"revision":"HEAD","prune":false}}}'
-              
-              # Wait for sync to complete
-              echo "Waiting for sync to complete..."
-              for i in $(seq 1 60); do
-                SYNC_STATUS=$(kubectl get application bootstrap -n argocd -o jsonpath='{.status.sync.status}')
-                HEALTH_STATUS=$(kubectl get application bootstrap -n argocd -o jsonpath='{.status.health.status}')
-                echo "Sync: ${SYNC_STATUS}, Health: ${HEALTH_STATUS}"
-                
-                if [ "${SYNC_STATUS}" = "Synced" ]; then
-                  echo "✅ Bootstrap app synced successfully with shutdown overlay"
-                  break
-                fi
-                
-                if [ $i -eq 60 ]; then
-                  echo "⚠️  Sync did not complete within timeout, continuing..."
-                fi
-                
-                sleep 5
-              done
-              
-              # Verify NodePool CPU is now 0
-              echo "Verifying NodePool CPU limit after overlay application..."
-              if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
-                CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
-                echo "✅ NodePool CPU limit is now: ${CPU_LIMIT}"
-                
-                if [ "${CPU_LIMIT}" != "0" ]; then
-                  echo "❌ Expected CPU limit to be 0, but got: ${CPU_LIMIT}"
-                  echo "This may indicate the shutdown overlay didn't apply correctly"
-                fi
-              fi
-            else
-              echo "✅ Bootstrap app already using shutdown overlay"
-            fi
-          else
-            echo "⚠️  Bootstrap application not found, skipping..."
-          fi
-          echo ""
-          
-          # Step 2.5: Restart Karpenter to ensure it picks up the NodePool changes
-          echo "Step 2.5: Restarting Karpenter to prevent new node spawning..."
+          # Step 2: Restart Karpenter to prevent new node spawning
+          echo "Step 2: Restarting Karpenter to prevent new node spawning..."
           if kubectl get deployment karpenter -n karpenter >/dev/null 2>&1; then
             echo "Restarting Karpenter deployment..."
             kubectl rollout restart deployment/karpenter -n karpenter
@@ -214,34 +160,6 @@ spec:
           echo ""
           
           echo "Checking NodePool CPU limit..."
-          if kubectl get nodepool default -n karpenter >/dev/null 2>&1; then
-            CPU_LIMIT=$(kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}')
-            if [ "${CPU_LIMIT}" = "0" ]; then
-              echo "✅ NodePool CPU limit is 0"
-            else
-              echo "⚠️  NodePool CPU limit is ${CPU_LIMIT} (expected: 0)"
-            fi
-          fi
-          echo ""
-          
-          echo "Checking bootstrap app configuration..."
-          if kubectl get application bootstrap -n argocd >/dev/null 2>&1; then
-            CURRENT_PATH=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.source.path}')
-            AUTO_SYNC=$(kubectl get application bootstrap -n argocd -o jsonpath='{.spec.syncPolicy.automated}')
-            
-            if [ "${CURRENT_PATH}" = "overlays/shutdown" ]; then
-              echo "✅ Bootstrap app is using shutdown overlay"
-            else
-              echo "⚠️  Bootstrap app path is '${CURRENT_PATH}' (expected: 'overlays/shutdown')"
-            fi
-            
-            if [ -z "${AUTO_SYNC}" ] || [ "${AUTO_SYNC}" = "null" ]; then
-              echo "✅ Bootstrap app auto-sync is disabled"
-            else
-              echo "⚠️  Bootstrap app auto-sync is still enabled"
-            fi
-          fi
-          echo ""
           
           # Final Summary
           echo "=========================================="
@@ -250,8 +168,6 @@ spec:
           echo ""
           echo "Summary:"
           echo "  - Auto-sync: Disabled"
-          echo "  - Bootstrap path: Switched to shutdown overlay"
-          echo "  - NodePool CPU limit: 0 (via shutdown overlay)"
           echo "  - NodeClaims: ${NODECLAIM_COUNT} remaining"
           echo "  - Karpenter nodes: ${KARPENTER_NODES} remaining"
           echo ""
