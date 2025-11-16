@@ -21,3 +21,4 @@ spec:
       backendRefs:
         - name: argocd-server
           port: 443
+          scheme: HTTPS
