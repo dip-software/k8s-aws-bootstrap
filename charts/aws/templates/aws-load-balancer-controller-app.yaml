@@ -1,0 +1,81 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: aws-load-balancer-controller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "6"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: {{ .Values.project }}
+  source:
+    repoURL: https://aws.github.io/eks-charts
+    # renovate: datasource=helm registryUrl=https://aws.github.io/eks-charts depName=aws-load-balancer-controller
+    targetRevision: 1.14.1
+    chart: aws-load-balancer-controller
+    helm:
+      valuesObject: 
+        syncPeriod: 0h5m0s
+        clusterName: {{ .Values.environmentConfig.clusterName }}
+        region: {{ .Values.environmentConfig.region }}
+        vpcId: {{ .Values.environmentConfig.bootstrap.awsVpcId }}
+        serviceAccount:
+          create: true
+          name: aws-load-balancer-controller
+          annotations:
+            eks.amazonaws.com/role-arn: {{ .Values.environmentConfig.bootstrap.awsLbcRoleArn }}
+        # Additional recommended settings for production
+        replicaCount: 2
+        resources:
+          limits:
+            memory: 128Mi
+          requests:
+            cpu: 5m
+            memory: 42Mi
+        nodeSelector:
+          node-type: system
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        affinity:
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - aws-load-balancer-controller
+                topologyKey: kubernetes.io/hostname
+        # Ensure pods are distributed across availability zones for high availability
+        topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: topology.kubernetes.io/zone
+          whenUnsatisfiable: DoNotSchedule
+          labelSelector:
+            matchLabels:
+              app.kubernetes.io/name: aws-load-balancer-controller  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: aws-load-balancer-controller
+  ignoreDifferences:
+    - group: apps
+      jsonPointers:
+        - /spec/replicas
+      kind: Deployment
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
