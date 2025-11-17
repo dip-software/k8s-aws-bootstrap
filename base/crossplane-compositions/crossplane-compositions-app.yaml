@@ -15,7 +15,7 @@ spec:
   source:
     path: kustomize
     repoURL: https://github.com/dip-software/crossplane-compositions
-    targetRevision: v0.0.3
+    targetRevision: v0.0.4
   syncPolicy:
     automated:
       prune: true

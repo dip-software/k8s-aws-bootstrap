@@ -1,5 +1,5 @@
-apiVersion: argoproj.io/v1alpha1
-kind: Application
+apiVersion: dip.io/v1alpha1
+kind: HelmApplication
 metadata:
   name: argocd
   namespace: argocd
@@ -11,10 +11,13 @@ spec:
     repoURL: oci://ghcr.io/argoproj/argo-helm/argo-cd
     targetRevision: 9.1.3
     path: .
+    withConfigKeys:
+      - resourcePrefix
+      - clusterFqdn
     helm:
       valuesObject:    
         global:
-          domain: "argocd.${CLUSTER_FQDN}"
+          domain: "argocd.${clusterFqdn}"
           # Enable high availability mode
           ha:
             enabled: false
@@ -279,7 +282,7 @@ spec:
           # Configure OIDC if needed (can be enabled later)
           config:      
             # URL configuration
-            url: "https://argocd.${CLUSTER_FQDN}"
+            url: "https://argocd.${clusterFqdn}"
             
             # Application instance label key
             application.instanceLabelKey: argocd.argoproj.io/instance
@@ -477,13 +480,3 @@ spec:
             requests:
               cpu: 20m
               memory: 32Mi
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: argocd
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-      - ServerSideApply=true
