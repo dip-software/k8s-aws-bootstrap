@@ -12,3 +12,4 @@ resources:
   - kyverno
   - kube-prometheus-stack
   - cert-manager
+  - features.yaml
