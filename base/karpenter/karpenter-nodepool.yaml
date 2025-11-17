@@ -11,6 +11,7 @@ spec:
   template:
     metadata:
       labels:
+        intent: apps
         node-type: "karpenter-managed"
         cluster: "${CLUSTER_NAME}"
     spec:
