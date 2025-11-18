@@ -1,0 +1,14 @@
+project: "default"
+
+environmentConfig:
+  resourcePrefix: ""
+  accountId: ""
+  partition: ""
+  clusterName: ""
+  clusterFqdn: ""
+  region: ""
+  bootstrap:
+    awsVpcId: ""
+    awsExternalDnsRoleArn: ""
+    awsEbsCsiDriverRoleArn: ""
+    awsLbcRoleArn: ""

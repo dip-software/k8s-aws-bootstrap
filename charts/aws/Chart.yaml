@@ -1,0 +1,14 @@
+apiVersion: v2
+name: aws
+version: 0.0.1
+description: A Helm chart for bootstrapping AWS add-ons
+type: application
+keywords:
+  - aws
+  - bootstrap
+  - dip
+  - infrastructure
+  - platform
+  - kubernetes
+  - helm
+  - argocd
