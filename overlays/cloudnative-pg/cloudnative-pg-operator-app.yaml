@@ -10,7 +10,7 @@ spec:
   source:
     repoURL: https://cloudnative-pg.io/charts/
     # renovate: datasource=helm registryUrl=https://cloudnative-pg.io/charts depName=cloudnative-pg
-    targetRevision: 0.23.1
+    targetRevision: 0.26.1
     chart: cloudnative-pg
     withConfigKeys:
       - resourcePrefix
