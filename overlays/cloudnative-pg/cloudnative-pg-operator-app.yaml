@@ -19,6 +19,8 @@ spec:
         fullnameOverride: cloudnative-pg
         # Default namespace for the operator
         namespace: cnpg-system
+  destination:
+    namespace: cnpg-system
   syncPolicy:
     automated:
       prune: true
