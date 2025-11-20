@@ -8,8 +8,8 @@ metadata:
 spec:
   project: default
   source:
-    repoURL: https://cloudnative-pg.github.io/charts/
-    # renovate: datasource=helm registryUrl=https://cloudnative-pg.github.io/charts/ depName=cloudnative-pg
+    repoURL: https://cloudnative-pg.io/charts/
+    # renovate: datasource=helm registryUrl=https://cloudnative-pg.io/charts/ depName=cloudnative-pg
     targetRevision: 0.23.1
     chart: cloudnative-pg
     withConfigKeys:
