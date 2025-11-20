@@ -1,0 +1,21 @@
+apiVersion: dip.io/v1alpha1
+kind: HelmApplication
+metadata:
+  name: cloudnative-pg-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+spec:
+  project: default
+  source:
+    repoURL: https://cloudnative-pg.github.io/charts/
+    # renovate: datasource=helm registryUrl=https://cloudnative-pg.github.io/charts/ depName=cloudnative-pg
+    targetRevision: 0.23.1
+    chart: cloudnative-pg
+    withConfigKeys:
+      - resourcePrefix
+    helm:
+      valuesObject:
+        fullnameOverride: cloudnative-pg
+        # Default namespace for the operator
+        namespace: cnpg-system
