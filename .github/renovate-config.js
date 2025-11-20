@@ -22,8 +22,7 @@ module.exports = {
         "/.github/actions/.*.(yaml|yml)/",
         "/base/.*.(yaml|yml)/",
         "/base/helm-charts/.*.(yaml|yml)/",
-        "/overlays/nginx/.*.(yaml|yml)/",
-        "/overlays/hsp-aws-platform/.*.(yaml|yml)/"
+        "/overlays/.*.(yaml|yml)/"
       ],
       matchStrings: [
         '# renovate:\\s+?datasource=(?<datasource>\\S+?)\\s+?depName=(?<depName>\\S+?)\\s+?(default|(?i:.*version))\\s?(:|=|:=|\\?=)\\s+"?(?<currentValue>\\S+?)"\\s',
