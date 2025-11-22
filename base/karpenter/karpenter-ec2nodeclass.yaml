@@ -39,9 +39,46 @@ spec:
     #!/bin/bash
     set -e
     
+    # ECR Credential Provider version (renovate-friendly)
+    ECR_CREDENTIAL_PROVIDER_VERSION="v1.34.1-dip.1"
+    
     # Update system
     apt-get update
     apt-get install -y curl awscli
+    
+    # Get IMDSv2 token for architecture detection
+    TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
+    
+    # Detect architecture from system
+    ARCH=$(uname -m)
+    if [ "$ARCH" = "aarch64" ]; then
+      ARCH="arm64"
+    elif [ "$ARCH" = "x86_64" ]; then
+      ARCH="amd64"
+    fi
+    
+    # Install ECR Credential Provider
+    mkdir -p /var/lib/rancher/credentialprovider/bin
+    curl -L "https://github.com/dip-software/cloud-provider-aws/releases/download/${ECR_CREDENTIAL_PROVIDER_VERSION}/ecr-credential-provider-linux-${ARCH}" \
+      -o /var/lib/rancher/credentialprovider/bin/ecr-credential-provider
+    chmod +x /var/lib/rancher/credentialprovider/bin/ecr-credential-provider
+    
+    # Create credential provider configuration
+    mkdir -p /var/lib/rancher/credentialprovider
+    cat > /var/lib/rancher/credentialprovider/config.yaml << 'EOF'
+    apiVersion: kubelet.config.k8s.io/v1
+    kind: CredentialProviderConfig
+    providers:
+      - name: ecr-credential-provider
+        matchImages:
+          - "*.dkr.ecr.*.amazonaws.com"
+          - "*.dkr.ecr.*.amazonaws.com.cn"
+          - "*.dkr.ecr-fips.*.amazonaws.com"
+          - "*.dkr.ecr.us-iso-east-1.c2s.ic.gov"
+          - "*.dkr.ecr.us-isob-east-1.sc2s.sgov.gov"
+        defaultCacheDuration: "12h"
+        apiVersion: credentialprovider.kubelet.k8s.io/v1
+    EOF
     
     # Increase file descriptor limits to handle many containers
     # Using 100000 to account for container runtime overhead (some containers inherit ~64512 instead of 65536)
@@ -74,10 +111,7 @@ spec:
     LimitNPROC=32768
     EOF
     
-    # Get IMDSv2 token
-    TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
-    
-    # Get instance metadata for provider-id using IMDSv2
+    # Get instance metadata for provider-id using IMDSv2 (reuse TOKEN from earlier)
     INSTANCE_ID=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/instance-id)
     AZ=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/availability-zone)
     REGION=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -s http://169.254.169.254/latest/meta-data/placement/region)
@@ -111,6 +145,8 @@ spec:
       --kubelet-arg="system-reserved=cpu=250m,memory=384Mi,ephemeral-storage=1Gi" \
       --kubelet-arg="enforce-node-allocatable=pods" \
       --kubelet-arg="max-pods=50" \
+      --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
+      --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin" \
       --node-label="node.kubernetes.io/instance-type=$INSTANCE_TYPE" \
       --node-label="topology.kubernetes.io/zone=$AZ"
     
