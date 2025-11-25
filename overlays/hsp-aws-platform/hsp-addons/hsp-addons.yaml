@@ -16,12 +16,14 @@ metadata:
 data:
   accountId: |
     ${AWS_ACCOUNT_ID}
+  sharedServicesAccountId: |
+    "${SHARED_SERVICE_ACCOUNT_ID}"
   region: |
     ${AWS_REGION}
   partition: |
     ${AWS_PARTITION}
   enabledPullThroughRegistries: |
-    []
+    ["docker-hub","quay","github","k8s","ecr-public"]
   eks: |
     {
       "oidcProviderArn": "${OIDC_PROVIDER_ARN}",
