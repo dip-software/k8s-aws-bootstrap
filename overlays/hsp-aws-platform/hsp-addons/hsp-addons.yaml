@@ -14,8 +14,10 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "20"
 data:
-  accountId: ${AWS_ACCOUNT_ID}
-  sharedServicesAccountId: ${SHARED_SERVICES_ACCOUNT_ID}
+  accountId: |
+    ${AWS_ACCOUNT_ID}
+  sharedServicesAccountId: |
+    ${SHARED_SERVICES_ACCOUNT_ID}
   region: ${AWS_REGION}
   partition: ${AWS_PARTITION}
   enabledPullThroughRegistries: |
