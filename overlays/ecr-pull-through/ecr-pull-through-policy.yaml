@@ -41,40 +41,19 @@ spec:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(?:docker\.io/)?([^\.\W]*)/(.*)$',
-                      regex_replace_all('^(?:docker\.io/)?([^:\W/]*)(:.*)?$',
-                      '{{element.image}}',
-                      'library/$1$2' ),
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(?:docker\\.io/)?([^\\.\\.W]*)/(.*)$', regex_replace_all('^(?:docker\\.io/)?([^:\\W/]*)(:.*)?$', '{{element.image}}', 'library/$1$2' ), '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' ) }}"
           - list: "request.object.spec.containers[]"
             patchStrategicMerge:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(?:docker\.io/)?([^\.\W]*)/(.*)$',
-                      regex_replace_all('^(?:docker\.io/)?([^:\W/]*)(:.*)?$',
-                      '{{element.image}}',
-                      'library/$1$2' ),
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(?:docker\\.io/)?([^\\.\\.W]*)/(.*)$', regex_replace_all('^(?:docker\\.io/)?([^:\\W/]*)(:.*)?$', '{{element.image}}', 'library/$1$2' ), '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(?:docker\.io/)?([^\.\W]*)/(.*)$',
-                      regex_replace_all('^(?:docker\.io/)?([^:\W/]*)(:.*)?$',
-                      '{{element.image}}',
-                      'library/$1$2' ),
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(?:docker\\.io/)?([^\\.\\.W]*)/(.*)$', regex_replace_all('^(?:docker\\.io/)?([^:\\W/]*)(:.*)?$', '{{element.image}}', 'library/$1$2' ), '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/docker-hub/$1/$2' ) }}"
     - name: mutate-quay-images
       context:
         - name: aws
@@ -106,34 +85,19 @@ spec:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(quay\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(quay\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' ) }}"
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(quay\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(quay\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(quay\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(quay\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/quay/$2' ) }}"
     - name: mutate-github-images
       context:
         - name: aws
@@ -165,34 +129,19 @@ spec:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(ghcr\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' ) }}"
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(ghcr\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(ghcr\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/github/$2' ) }}"
     - name: mutate-k8s-images
       context:
         - name: aws
@@ -224,34 +173,19 @@ spec:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(registry\.k8s\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(registry\\.k8s\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' ) }}"
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(registry\.k8s\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(registry\\.k8s\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(registry\.k8s\.io/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(registry\\.k8s\\.io/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/k8s/$2' ) }}"
     - name: mutate-ecr-public-images
       context:
         - name: aws
@@ -283,32 +217,16 @@ spec:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(public\.ecr\.aws/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(public\\.ecr\\.aws/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' ) }}"
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(public\.ecr\.aws/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' )
-                      }}
+                    image: "{{ regex_replace_all('^(public\\.ecr\\.aws/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: >-
-                      {{
-                      regex_replace_all('^(public\.ecr\.aws/)(.*)$',
-                      '{{element.image}}',
-                      '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' )
-                      }}
-                      
+                    image: "{{ regex_replace_all('^(public\\.ecr\\.aws/)(.*)$', '{{element.image}}', '{{ aws.data.sharedServicesAccountId }}.dkr.ecr.{{aws.data.region}}.amazonaws.com/ecr-public/$2' ) }}"
