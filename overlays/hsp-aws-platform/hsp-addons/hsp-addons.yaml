@@ -17,7 +17,7 @@ data:
   accountId: |
     ${AWS_ACCOUNT_ID}
   sharedServicesAccountId: |
-    "${SHARED_SERVICE_ACCOUNT_ID}"
+    ${SHARED_SERVICE_ACCOUNT_ID}
   region: |
     ${AWS_REGION}
   partition: |
