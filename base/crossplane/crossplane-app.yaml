@@ -16,6 +16,8 @@ spec:
     targetRevision: v2.1.1
     helm:
       valuesObject:
+        image:
+          repository: ghcr.io/crossplane/crossplane
         args:
           - --enable-operations
         metrics:
