@@ -6,6 +6,7 @@ metadata:
     pod-policies.kyverno.io/autogen-controllers: none
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
+    argocd.argoproj.io/sync-wave: "21"
 spec:
   background: false
   mutateExistingOnPolicyUpdate: false
