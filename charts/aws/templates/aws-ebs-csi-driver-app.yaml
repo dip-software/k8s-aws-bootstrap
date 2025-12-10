@@ -26,6 +26,13 @@ spec:
               type: gp3
               encrypted: "true"
             provisioner: ebs.csi.aws.com
+          - name: io2-encrypted
+            volumeBindingMode: WaitForFirstConsumer
+            reclaimPolicy: Delete
+            parameters:
+              type: io2
+              encrypted: "true"
+            provisioner: ebs.csi.aws.com
         controller:
           # Require critical addon nodes for EBS CSI controller (critical)
           tolerations:
