@@ -7,3 +7,4 @@ resources:
   - vpa
   - hsp-addons
   - ecr-pull-through
+  - cloudnative-pg
