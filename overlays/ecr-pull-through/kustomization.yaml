@@ -1,8 +1,0 @@
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-resources:
-  # Base platform for CloudNativePG
-  - ../cloudnative-pg
-  # CloudNativePG operator HelmApplication on top of the base
-  - ecr-pull-through-policy.yaml
