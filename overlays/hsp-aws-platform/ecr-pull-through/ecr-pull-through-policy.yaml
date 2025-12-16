@@ -22,6 +22,13 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        # CNPG operator does not tolerate image mutations
+        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
+        any:
+          - resources:
+              namespaces:
+                - cnpg-system
       preconditions:
         all:
           - key: "{{ request.operation || 'BACKGROUND' }}"
@@ -66,6 +73,13 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        # CNPG operator does not tolerate image mutations
+        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
+        any:
+          - resources:
+              namespaces:
+                - cnpg-system
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -110,6 +124,13 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        # CNPG operator does not tolerate image mutations
+        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
+        any:
+          - resources:
+              namespaces:
+                - cnpg-system
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -154,6 +175,13 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        # CNPG operator does not tolerate image mutations
+        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
+        any:
+          - resources:
+              namespaces:
+                - cnpg-system
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -198,6 +226,13 @@ spec:
           - resources:
               kinds:
                 - Pod
+      exclude:
+        # CNPG operator does not tolerate image mutations
+        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
+        any:
+          - resources:
+              namespaces:
+                - cnpg-system
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
