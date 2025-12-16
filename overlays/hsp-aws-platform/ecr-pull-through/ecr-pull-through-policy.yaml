@@ -22,13 +22,7 @@ spec:
           - resources:
               kinds:
                 - Pod
-      exclude:
-        # CNPG operator does not tolerate image mutations
-        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
-        any:
-          - resources:
-              namespaces:
-                - cnpg-system
+
       preconditions:
         all:
           - key: "{{ request.operation || 'BACKGROUND' }}"
@@ -73,13 +67,7 @@ spec:
           - resources:
               kinds:
                 - Pod
-      exclude:
-        # CNPG operator does not tolerate image mutations
-        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
-        any:
-          - resources:
-              namespaces:
-                - cnpg-system
+
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -124,13 +112,7 @@ spec:
           - resources:
               kinds:
                 - Pod
-      exclude:
-        # CNPG operator does not tolerate image mutations
-        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
-        any:
-          - resources:
-              namespaces:
-                - cnpg-system
+
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -151,19 +133,19 @@ spec:
               spec:
                 containers:
                   - name: "{{ element.name }}"
-                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
+                    image: "{{ regex_match('^ghcr\\.io/cloudnative-pg', '{{element.image}}') && '{{element.image}}' || regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
           - list: "request.object.spec.initContainers[]"
             patchStrategicMerge:
               spec:
                 initContainers:
                   - name: "{{ element.name }}"
-                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
+                    image: "{{ regex_match('^ghcr\\.io/cloudnative-pg', '{{element.image}}') && '{{element.image}}' || regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
           - list: "request.object.spec.ephemeralContainers[]"
             patchStrategicMerge:
               spec:
                 ephemeralContainers:
                   - name: "{{ element.name }}"
-                    image: "{{ regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
+                    image: "{{ regex_match('^ghcr\\.io/cloudnative-pg', '{{element.image}}') && '{{element.image}}' || regex_replace_all('^(ghcr\\.io/)(.*)$', '{{element.image}}', '{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.sharedServicesAccountId }}', '') }}.dkr.ecr.{{ regex_replace_all('^\\s+|\\s+$', '{{ aws.data.region }}', '') }}.amazonaws.com/github/$2' ) }}"
     - name: mutate-k8s-images
       context:
         - name: aws
@@ -175,13 +157,7 @@ spec:
           - resources:
               kinds:
                 - Pod
-      exclude:
-        # CNPG operator does not tolerate image mutations
-        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
-        any:
-          - resources:
-              namespaces:
-                - cnpg-system
+
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
@@ -226,13 +202,7 @@ spec:
           - resources:
               kinds:
                 - Pod
-      exclude:
-        # CNPG operator does not tolerate image mutations
-        # See: https://github.com/cloudnative-pg/cloudnative-pg/issues/7981
-        any:
-          - resources:
-              namespaces:
-                - cnpg-system
+
       preconditions:
         all:
           - key: "{{request.operation || 'BACKGROUND'}}"
