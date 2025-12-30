@@ -33,3 +33,11 @@ spec:
           - kind: Secret
             name: ${RESOURCE_PREFIX}-wildcard-tls
             namespace: gateway
+    - name: tls-passthrough
+      protocol: TLS 
+      port: 4443
+      tls:
+        mode: Passthrough
+      allowedRoutes:
+        namespaces:
+          from: All
