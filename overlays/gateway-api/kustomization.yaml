@@ -6,3 +6,4 @@ resources:
   - shared-gateway
   - features.yaml
   - httproute-argocd.yaml
+  - grpcroute-argocd.yaml
