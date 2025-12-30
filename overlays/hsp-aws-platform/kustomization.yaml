@@ -3,7 +3,6 @@ kind: Kustomization
 
 resources:
   - ../gateway-api
-  - eso
   - vpa
   - hsp-addons
   - ecr-pull-through

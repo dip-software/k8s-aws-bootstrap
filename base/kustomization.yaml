@@ -6,6 +6,7 @@ resources:
   - cilium
   - crds
   - aws
+  - eso
   - crossplane
   - crossplane-compositions
   - karpenter
