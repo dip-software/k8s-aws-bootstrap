@@ -130,15 +130,18 @@ spec:
       exit 1
     fi
     
-    # Fetch K3s version from control plane
-    # Use -k because we might not have the CA cert trusted in userData yet
-    K3S_VERSION=$(curl -sk "${CLUSTER_ENDPOINT}/version" | jq -r .gitVersion || echo "")
+    # Retrieve K3s version from AWS Systems Manager Parameter Store
+    K3S_VERSION=$(aws ssm get-parameter \
+      --name "${K3S_VERSION_PARAMETER_NAME}" \
+      --region "$REGION" \
+      --query "Parameter.Value" \
+      --output text || echo "")
 
     if [ -n "$K3S_VERSION" ] && [ "$K3S_VERSION" != "null" ]; then
-      echo "Detected K3s version: $K3S_VERSION"
+      echo "Using K3s version from SSM: $K3S_VERSION"
       export INSTALL_K3S_VERSION="$K3S_VERSION"
     else
-      echo "Failed to detect K3s version, falling back to channel: ${K3S_CHANNEL}"
+      echo "Failed to retrieve K3s version from SSM, falling back to channel: ${K3S_CHANNEL}"
       export INSTALL_K3S_CHANNEL="${K3S_CHANNEL}"
     fi
 
