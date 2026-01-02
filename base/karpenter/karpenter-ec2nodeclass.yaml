@@ -44,7 +44,7 @@ spec:
     
     # Update system
     apt-get update
-    apt-get install -y curl awscli
+    apt-get install -y curl awscli jq
     
     # Get IMDSv2 token for architecture detection
     TOKEN=$(curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600")
@@ -130,10 +130,21 @@ spec:
       exit 1
     fi
     
+    # Fetch K3s version from control plane
+    # Use -k because we might not have the CA cert trusted in userData yet
+    K3S_VERSION=$(curl -sk "${CLUSTER_ENDPOINT}/version" | jq -r .gitVersion)
+
+    if [ -z "$K3S_VERSION" ] || [ "$K3S_VERSION" == "null" ]; then
+      echo "Failed to detect K3s version from ${CLUSTER_ENDPOINT}/version"
+      exit 1
+    fi
+
+    echo "Detected K3s version: $K3S_VERSION"
+
     # Export K3s environment variables for agent installation
     export K3S_TOKEN="$K3S_TOKEN"
     export K3S_URL="${CLUSTER_ENDPOINT}"
-    export INSTALL_K3S_CHANNEL="${K3S_CHANNEL}"
+    export INSTALL_K3S_VERSION="$K3S_VERSION"
 
     # Install K3s agent
     curl -sfL https://get.k3s.io | sh -s - \
