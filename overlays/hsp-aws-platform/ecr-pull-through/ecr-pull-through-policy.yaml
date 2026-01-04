@@ -7,6 +7,7 @@ metadata:
     policies.kyverno.io/severity: medium
     policies.kyverno.io/subject: Pod
     argocd.argoproj.io/sync-wave: "21"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Prune=false
 spec:
   background: false
   mutateExistingOnPolicyUpdate: false
