@@ -16,13 +16,21 @@ spec:
     chart: amazon-eks-pod-identity-webhook 
     helm:
       valuesObject: 
-        replicaCount: 2
+        replicaCount: 1
         # Require critical addon nodes for pod identity webhook (critical)
-        nodeSelector: {node-type: system}
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
         resources:
           limits:
             memory: 32Mi

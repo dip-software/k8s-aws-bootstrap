@@ -21,12 +21,19 @@ spec:
           - ingress
           - gateway-httproute
         # Require critical addon nodes for external-dns (critical)
-        nodeSelector:
-          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
         resources:
           limits:
             memory: 64Mi

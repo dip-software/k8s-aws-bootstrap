@@ -26,19 +26,26 @@ spec:
           annotations:
             eks.amazonaws.com/role-arn: ${AWS_LBC_ROLE_ARN}
         # Additional recommended settings for production
-        replicaCount: 2
+        replicaCount: 1
         resources:
           limits:
             memory: 128Mi
           requests:
             cpu: 5m
             memory: 42Mi
-        nodeSelector:
-          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100

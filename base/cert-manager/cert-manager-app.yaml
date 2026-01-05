@@ -30,7 +30,16 @@ spec:
             eks.amazonaws.com/role-arn: ${CERT_MANAGER_ROLE_ARN}
             
         # Node placement - Run on system nodes like ArgoCD
-        nodeSelector: {node-type: system}
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
@@ -44,7 +53,16 @@ spec:
             
         # Configure cainjector with the same node placement
         cainjector:
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
+                    - control-plane
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -57,7 +75,16 @@ spec:
               
         # Configure webhook with the same node placement
         webhook:
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
+                    - control-plane
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -70,7 +97,16 @@ spec:
               
         # Configure startupapicheck with the same node placement
         startupapicheck:
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
+                    - control-plane
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
