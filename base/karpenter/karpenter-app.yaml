@@ -44,7 +44,7 @@ spec:
             securityGroupSelector:
               karpenter.sh/discovery/${CLUSTER_NAME}: "${CLUSTER_NAME}"
         # Replica count for high availability
-        replicas: 2
+        replicas: 1
         
         # Service account configuration with IRSA
         serviceAccount:
