@@ -162,7 +162,6 @@ spec:
       --kubelet-arg="image-credential-provider-config=/var/lib/rancher/credentialprovider/config.yaml" \
       --kubelet-arg="image-credential-provider-bin-dir=/var/lib/rancher/credentialprovider/bin" \
       --node-label="node.kubernetes.io/instance-type=$INSTANCE_TYPE" \
-      --node-label="node-role.kubernetes.io/worker=true" \
       --node-label="topology.kubernetes.io/zone=$AZ"
     
     # Verify K3s agent is running
