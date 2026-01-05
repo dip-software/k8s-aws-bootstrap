@@ -62,8 +62,16 @@ spec:
         logLevel: debug
         
         # Node affinity and tolerations - Run only on system nodes
-        nodeSelector: {node-type: system}
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100
