@@ -99,12 +99,22 @@ spec:
                 operator: Exists
               - key: CriticalAddonsOnly
                 operator: Exists
-            resources:
-              limits:
-                memory: 32Mi
-              requests:
-                cpu: 10m
-                memory: 18Mi
+            backend:
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 64Mi
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+            frontend:
+              resources:
+                limits:
+                  cpu: 100m
+                  memory: 32Mi
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
           metrics:
             enabled:
               - dns
