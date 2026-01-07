@@ -4,7 +4,7 @@ metadata:
   name: amazon-eks-pod-identity-webhook
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/sync-wave: "2"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -46,7 +46,7 @@ spec:
           registry: public.ecr.aws
           repository: eks/amazon-eks-pod-identity-webhook
         # Use cert-manager for TLS certificates
-        # cert-manager installs first (wave 4), then webhook can use it (wave 5)
+        # cert-manager installs first (wave 1), then webhook can use it (wave 2)
         pki:
           certManager:
             enabled: true

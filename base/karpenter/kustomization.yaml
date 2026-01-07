@@ -6,3 +6,4 @@ resources:
   - karpenter-ec2nodeclass.yaml
   - karpenter-nodepool.yaml
   - karpenter-nodepool-system.yaml
+  - karpenter-restart-job.yaml
