@@ -35,13 +35,14 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: admission-controller
-          resources:
-            limits:
-              cpu: 200m
-              memory: 256Mi
-            requests:
-              cpu: 50m
-              memory: 128Mi
+          container:
+            resources:
+              limits:
+                cpu: 200m
+                memory: 256Mi
+              requests:
+                cpu: 50m
+                memory: 128Mi
         backgroundController:
           replicas: 2
           # Run background controller on system nodes (critical component)
@@ -119,6 +120,14 @@ spec:
             tolerations:
             - key: CriticalAddonsOnly
               operator: Exists
+            podResources:
+              limits:
+                cpu: 100m
+                memory: 256Mi
+              requests:
+                cpu: 10m
+                memory: 64Mi
+          install:
             resources:
               limits:
                 cpu: 100m
