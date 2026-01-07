@@ -35,6 +35,13 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: admission-controller
+          resources:
+            limits:
+              cpu: 200m
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
         backgroundController:
           replicas: 2
           # Run background controller on system nodes (critical component)
@@ -51,6 +58,13 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: background-controller
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 20m
+              memory: 64Mi
         cleanupController:
           replicas: 2
           # Run cleanup controller on system nodes (critical component)
@@ -67,6 +81,13 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: cleanup-controller
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
         reportsController:
           replicas: 2
           # Run reports controller on system nodes (critical component)
@@ -83,6 +104,13 @@ spec:
             labelSelector:
               matchLabels:
                 app.kubernetes.io/component: reports-controller
+          resources:
+            limits:
+              cpu: 100m
+              memory: 256Mi
+            requests:
+              cpu: 20m
+              memory: 64Mi
         # CRD migration and webhook cleanup jobs
         crds:
           migration:
@@ -91,12 +119,26 @@ spec:
             tolerations:
             - key: CriticalAddonsOnly
               operator: Exists
+            resources:
+              limits:
+                cpu: 100m
+                memory: 128Mi
+              requests:
+                cpu: 10m
+                memory: 32Mi
         webhooksCleanup:
           nodeSelector:
             node-type: system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
+          resources:
+            limits:
+              cpu: 100m
+              memory: 128Mi
+            requests:
+              cpu: 10m
+              memory: 32Mi
   syncPolicy:
     automated:
       prune: true
