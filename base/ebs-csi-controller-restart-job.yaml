@@ -115,8 +115,16 @@ spec:
             exit 1
           fi
       # Run on system nodes with critical addons
-      nodeSelector:
-        node-type: system
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                - system
+                - control-plane
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
