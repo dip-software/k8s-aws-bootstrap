@@ -1,0 +1,98 @@
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: system
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  # Template for system node provisioning
+  template:
+    metadata:
+      labels:
+        intent: system
+        node-type: "system"
+        cluster: "${CLUSTER_NAME}"
+    spec:
+      # Reference to EC2NodeClass (reuse default)
+      nodeClassRef:
+        group: karpenter.k8s.aws
+        kind: EC2NodeClass
+        name: default
+        
+      # Taint for CriticalAddOnsOnly workloads
+      taints:
+        - key: CriticalAddOnsOnly
+          value: "true"
+          effect: NoSchedule
+          
+      # Node requirements for system workloads
+      requirements:
+        # Prefer on-demand for stability, allow spot as fallback
+        - key: karpenter.sh/capacity-type
+          operator: In
+          values: ["on-demand", "spot"]
+          
+        # Instance categories suitable for system workloads
+        - key: karpenter.k8s.aws/instance-category
+          operator: In
+          values: ["c", "m", "r"]
+          
+        # Modern instance generations (4+ for ARM64 support)
+        - key: karpenter.k8s.aws/instance-generation
+          operator: Gt
+          values: ["4"]
+          
+        # Size limits for system nodes
+        - key: karpenter.k8s.aws/instance-size
+          operator: In
+          values: ["medium", "large", "xlarge"]
+
+        # Ensure sufficient memory capacity per node (> 1500MB)
+        - key: karpenter.k8s.aws/instance-memory
+          operator: Gt
+          values: ["1500"]
+
+        # Ensure sufficient CPU capacity per node (>= 2 vCPU)
+        - key: karpenter.k8s.aws/instance-cpu
+          operator: Gt
+          values: ["1"]
+
+      # Startup taints for K3s initialization
+      startupTaints:
+        - key: karpenter.sh/unregistered
+          value: "true"
+          effect: NoExecute
+          
+      # Node expiration for security and cost management
+      expireAfter: 360h # 15 days
+      
+      # Termination grace period
+      terminationGracePeriod: 10m
+      
+  # Resource limits for system nodes
+  limits:
+    cpu: "10"
+    memory: "20Gi"
+    
+  # Disruption settings for system node lifecycle management
+  disruption:
+    # Consolidate when nodes are empty or underutilized
+    consolidationPolicy: WhenEmptyOrUnderutilized
+    
+    # Wait time before consolidation (longer for system stability)
+    consolidateAfter: 60s
+    
+    # Budget controls for disruption rate limiting
+    budgets:
+      # Allow only 1 node to be disrupted at once for system stability
+      - nodes: "1"
+      
+      # Maintenance window: no disruption during business hours (UTC)
+      - schedule: "0 9 * * mon-fri"
+        duration: 8h
+        nodes: "0"
+        
+  # Weight for NodePool selection (lower than default to prefer default pool for regular workloads)
+  weight: 5

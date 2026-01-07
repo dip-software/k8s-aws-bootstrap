@@ -5,3 +5,4 @@ resources:
   - karpenter-app.yaml
   - karpenter-ec2nodeclass.yaml
   - karpenter-nodepool.yaml
+  - karpenter-nodepool-system.yaml
