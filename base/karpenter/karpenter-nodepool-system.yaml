@@ -23,7 +23,7 @@ spec:
         
       # Taint for CriticalAddOnsOnly workloads
       taints:
-        - key: CriticalAddOnsOnly
+        - key: CriticalAddonsOnly
           value: "true"
           effect: NoSchedule
           
@@ -73,8 +73,8 @@ spec:
       
   # Resource limits for system nodes
   limits:
-    cpu: "10"
-    memory: "20Gi"
+    cpu: "100"
+    memory: "200Gi"
     
   # Disruption settings for system node lifecycle management
   disruption:
