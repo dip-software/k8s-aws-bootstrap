@@ -20,6 +20,14 @@ spec:
         fullnameOverride: cloudnative-pg
         # Default namespace for the operator
         namespace: cnpg-system
+        # Resource limits for the operator
+        resources:
+          limits:
+            cpu: 100m
+            memory: 256Mi
+          requests:
+            cpu: 5m
+            memory: 64Mi
   destination:
     namespace: cnpg-system
   syncPolicy:
