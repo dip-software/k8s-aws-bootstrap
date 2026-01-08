@@ -29,16 +29,16 @@ spec:
             resources:
               requests:
                 cpu: 15m
-                memory: 341Mi
+                memory: 600Mi
               limits:
-                memory: 682Mi
+                memory: 1Gi
         grafana:
           resources:
             requests:
               cpu: 10m
-              memory: 367Mi
+              memory: 512Mi
             limits:
-              memory: 734Mi
+              memory: 768Mi
         prometheusOperator:
           resources:
             requests:
