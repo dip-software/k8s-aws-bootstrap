@@ -38,10 +38,9 @@ spec:
           container:
             resources:
               limits:
-                cpu: 200m
                 memory: 256Mi
               requests:
-                cpu: 50m
+                cpu: 5m
                 memory: 128Mi
         backgroundController:
           replicas: 2
@@ -61,10 +60,9 @@ spec:
                 app.kubernetes.io/component: background-controller
           resources:
             limits:
-              cpu: 100m
               memory: 256Mi
             requests:
-              cpu: 20m
+              cpu: 5m
               memory: 64Mi
         cleanupController:
           replicas: 2
@@ -84,10 +82,9 @@ spec:
                 app.kubernetes.io/component: cleanup-controller
           resources:
             limits:
-              cpu: 100m
               memory: 128Mi
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 32Mi
         reportsController:
           replicas: 2
@@ -107,10 +104,9 @@ spec:
                 app.kubernetes.io/component: reports-controller
           resources:
             limits:
-              cpu: 100m
               memory: 256Mi
             requests:
-              cpu: 20m
+              cpu: 5m
               memory: 64Mi
         # CRD migration and webhook cleanup jobs
         crds:
@@ -122,10 +118,9 @@ spec:
               operator: Exists
             podResources:
               limits:
-                cpu: 100m
                 memory: 256Mi
               requests:
-                cpu: 10m
+                cpu: 5m
                 memory: 64Mi
         webhooksCleanup:
           nodeSelector:
@@ -135,10 +130,9 @@ spec:
             operator: Exists
           resources:
             limits:
-              cpu: 100m
               memory: 128Mi
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 32Mi
   syncPolicy:
     automated:

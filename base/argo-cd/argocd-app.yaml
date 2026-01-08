@@ -256,7 +256,7 @@ spec:
             limits:
               memory: 512Mi
             requests:
-              cpu: 100m
+              cpu: 5m
               memory: 128Mi
           
           # Anti-affinity to spread replicas across nodes and require critical addon nodes
@@ -296,7 +296,7 @@ spec:
             limits:
               memory: 512Mi
             requests:
-              cpu: 100m
+              cpu: 5m
               memory: 128Mi
           
           nodeSelector: {node-type: system}
@@ -413,7 +413,7 @@ spec:
             limits:
               memory: 2Gi
             requests:
-              cpu: 500m
+              cpu: 200m
               memory: 768Mi
           
           metrics:

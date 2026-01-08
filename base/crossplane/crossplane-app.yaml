@@ -24,10 +24,9 @@ spec:
           enabled: true
         resources:
           requests:
-            cpu: 10m
+            cpu: 5m
             memory: 512Mi
           limits:
-            cpu: 100m
             memory: 1Gi
         
         # Schedule on system nodes like ArgoCD (critical addon)
@@ -46,10 +45,9 @@ spec:
               operator: Exists
           resources:
             requests:
-              cpu: 10m
+              cpu: 5m
               memory: 64Mi
             limits:
-              cpu: 100m
               memory: 128Mi
   destination:
     server: https://kubernetes.default.svc
