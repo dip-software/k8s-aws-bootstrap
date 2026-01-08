@@ -24,8 +24,8 @@ spec:
             # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
             tag: v1.31.3
         
-        # Admissioncontroller configuration
-        admissioncontroller:
+        # Admission controller configuration
+        admissionController:
           enabled: true
           replicaCount: 1
           
@@ -34,6 +34,7 @@ spec:
               cpu: 50m
               memory: 200Mi
             limits:
+              cpu: 100m
               memory: 500Mi
         
         # Recommender configuration
@@ -46,6 +47,7 @@ spec:
               cpu: 50m
               memory: 500Mi
             limits:
+              cpu: 100m
               memory: 1000Mi
         
         # Updater configuration
@@ -58,6 +60,7 @@ spec:
               cpu: 50m
               memory: 500Mi
             limits:
+              cpu: 100m
               memory: 1000Mi
         
         # Metrics
