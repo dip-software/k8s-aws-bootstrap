@@ -7,3 +7,13 @@ spec:
   # Set CPU limit to 0 to prevent new node provisioning during shutdown
   limits:
     cpu: "0"
+---
+apiVersion: karpenter.sh/v1
+kind: NodePool
+metadata:
+  name: system
+  namespace: karpenter
+spec:
+  # Set CPU limit to 0 to prevent new node provisioning during shutdown
+  limits:
+    cpu: "0"
