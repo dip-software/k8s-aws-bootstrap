@@ -4,7 +4,7 @@ metadata:
   name: argocd
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "10"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true,Prune=false
 spec:
   project: default
@@ -260,11 +260,15 @@ spec:
               memory: 128Mi
           
           # Anti-affinity to spread replicas across nodes and require critical addon nodes
-          nodeSelector: {node-type: system}
-          tolerations:
-          - key: CriticalAddonsOnly
-            operator: Exists
           affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100
@@ -273,6 +277,9 @@ spec:
                     matchLabels:
                       app.kubernetes.io/name: argocd-server
                   topologyKey: kubernetes.io/hostname
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
           
           # Enable metrics for monitoring
           metrics:
@@ -299,11 +306,15 @@ spec:
               cpu: 5m
               memory: 128Mi
           
-          nodeSelector: {node-type: system}
-          tolerations:
-          - key: CriticalAddonsOnly
-            operator: Exists
           affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
             podAntiAffinity:
               preferredDuringSchedulingIgnoredDuringExecution:
               - weight: 100
@@ -312,6 +323,9 @@ spec:
                     matchLabels:
                       app.kubernetes.io/name: argocd-repo-server
                   topologyKey: kubernetes.io/hostname
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
           
           metrics:
             enabled: true
@@ -403,11 +417,18 @@ spec:
           replicas: 1  # Can be increased for larger clusters
           
           # Require critical addon nodes for ArgoCD controller
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
-          affinity:
           
           resources:
             limits:
@@ -422,7 +443,15 @@ spec:
               enabled: false
 
         redisSecretInit:  
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations: [{key: "CriticalAddonsOnly", operator: "Exists"}]
 
         # Configure Redis for caching (used in HA mode)
@@ -430,7 +459,15 @@ spec:
           enabled: true
           
           # Require critical addon nodes for Redis
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -449,7 +486,15 @@ spec:
         # Configure Dex for OIDC (if using external OIDC)
         dex:
           enabled: false  # Enable if you need Dex for OIDC
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -457,7 +502,15 @@ spec:
         # Notifications controller (optional)
         notifications:
           enabled: true
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
@@ -471,7 +524,15 @@ spec:
         # ApplicationSet controller
         applicationSet:
           enabled: true
-          nodeSelector: {node-type: system}
+          affinity:
+            nodeAffinity:
+              requiredDuringSchedulingIgnoredDuringExecution:
+                nodeSelectorTerms:
+                - matchExpressions:
+                  - key: node-type
+                    operator: In
+                    values:
+                    - system
           tolerations:
           - key: CriticalAddonsOnly
             operator: Exists
