@@ -7,4 +7,3 @@ resources:
   - features.yaml
   - httproute-grafana.yaml
   - httproute-argocd.yaml
-  - grpcroute-argocd.yaml

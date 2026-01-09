@@ -4,7 +4,7 @@ metadata:
   name: shared-gateway
   namespace: gateway
   annotations:
-    argocd.argoproj.io/sync-wave: "8"
+    argocd.argoproj.io/sync-wave: "9"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   gatewayClassName: cilium
@@ -33,11 +33,3 @@ spec:
           - kind: Secret
             name: ${RESOURCE_PREFIX}-wildcard-tls
             namespace: gateway
-    - name: tls-passthrough
-      protocol: TLS 
-      port: 4443
-      tls:
-        mode: Passthrough
-      allowedRoutes:
-        namespaces:
-          from: All
