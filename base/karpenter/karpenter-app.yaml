@@ -16,6 +16,7 @@ spec:
     path: .
     helm:
       valuesObject:
+        topologySpreadConstraints: []
         controller:
           resources:
             requests:
