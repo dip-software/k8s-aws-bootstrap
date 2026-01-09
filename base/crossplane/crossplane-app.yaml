@@ -16,6 +16,8 @@ spec:
     targetRevision: v2.1.3
     helm:
       valuesObject:
+        provider:
+          defaultActivations: ["*"]
         image:
           repository: ghcr.io/crossplane/crossplane
         args:
