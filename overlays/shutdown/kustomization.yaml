@@ -7,3 +7,4 @@ resources:
 
 patches:
   - path: nodepool-shutdown-patch.yaml
+  - path: shared-gateway-shutdown-patch.yaml
