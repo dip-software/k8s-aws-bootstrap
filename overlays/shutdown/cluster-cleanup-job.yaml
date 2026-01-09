@@ -48,6 +48,8 @@ kind: Job
 metadata:
   name: cluster-cleanup
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/hook: PostSync
 spec:
   ttlSecondsAfterFinished: 3600  # Keep job for 1 hour after completion
   backoffLimit: 3

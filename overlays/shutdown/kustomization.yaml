@@ -3,6 +3,7 @@ kind: Kustomization
 
 resources:
   - ../hsp-aws-platform
+  - cluster-cleanup-job.yaml
 
 patches:
   - path: nodepool-shutdown-patch.yaml
