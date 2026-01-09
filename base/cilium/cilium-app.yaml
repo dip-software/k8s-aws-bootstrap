@@ -61,7 +61,7 @@ spec:
           enabled: true
           resources:
             limits:
-              memory: 40Mi
+              memory: 50Mi
             requests:
               cpu: 20m
               memory: 32Mi
@@ -102,7 +102,6 @@ spec:
             backend:
               resources:
                 limits:
-                  cpu: 100m
                   memory: 64Mi
                 requests:
                   cpu: 10m
@@ -110,7 +109,6 @@ spec:
             frontend:
               resources:
                 limits:
-                  cpu: 100m
                   memory: 32Mi
                 requests:
                   cpu: 10m
