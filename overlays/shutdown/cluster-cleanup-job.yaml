@@ -28,7 +28,7 @@ rules:
 # Deployment management for restarting Karpenter
 - apiGroups: ["apps"]
   resources: ["deployments"]
-  verbs: ["get", "list", "patch"]
+  verbs: ["get", "list", "patch", "watch"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -182,8 +182,18 @@ spec:
             exit 1
           fi
       # Run on system nodes with critical addons
-      nodeSelector:
-        node-type: system
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: karpenter.sh/nodepool
+                operator: DoesNotExist
+              - key: node-type
+                operator: In
+                values:
+                - system
+                - control-plane
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
