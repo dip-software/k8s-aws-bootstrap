@@ -89,10 +89,10 @@ spec:
       # Allow only 1 node to be disrupted at once for system stability
       - nodes: "1"
       
-      # Maintenance window: no disruption during business hours (UTC)
+      # Maintenance window: relax disruption during business hours (UTC) to allow consolidation
       - schedule: "0 9 * * mon-fri"
         duration: 8h
-        nodes: "0"
+        nodes: "1"
         
   # Weight for NodePool selection (lower than default to prefer default pool for regular workloads)
   weight: 5
