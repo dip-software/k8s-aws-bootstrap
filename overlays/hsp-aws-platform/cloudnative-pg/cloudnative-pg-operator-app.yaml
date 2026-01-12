@@ -23,7 +23,6 @@ spec:
         # Resource limits for the operator
         resources:
           limits:
-            cpu: 100m
             memory: 256Mi
           requests:
             cpu: 5m
