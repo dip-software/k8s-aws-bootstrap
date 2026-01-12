@@ -84,9 +84,10 @@ spec:
       - nodes: "10%"
       
       # Maintenance window: reduced disruption during business hours (UTC)
+      # set to 1 to ensure at least one node can be consolidated in small clusters
       - schedule: "0 9 * * mon-fri"
         duration: 8h
-        nodes: "5%"
+        nodes: "1"
         
   # Weight for NodePool selection (higher = preferred)
   weight: 10
