@@ -23,6 +23,10 @@ spec:
           ha:
             enabled: false
 
+        # Redis secret init is done during bootstrapping
+        redisSecretInit:
+          enabled: false
+
         # Configs
         configs:
           params:
