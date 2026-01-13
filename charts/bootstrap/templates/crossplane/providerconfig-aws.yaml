@@ -3,7 +3,7 @@ kind: ProviderConfig
 metadata:
   name: default
   annotations:
-    argocd.argoproj.io/sync-wave: "9"
+    argocd.argoproj.io/sync-wave: "18"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   credentials:
@@ -14,7 +14,7 @@ kind: ClusterProviderConfig
 metadata:
   name: default
   annotations:
-    argocd.argoproj.io/sync-wave: "9"
+    argocd.argoproj.io/sync-wave: "18"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
 spec:
   credentials:
