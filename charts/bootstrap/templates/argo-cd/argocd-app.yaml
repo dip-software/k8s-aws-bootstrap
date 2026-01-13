@@ -235,16 +235,7 @@ spec:
                   return determine_health_status()
               
           cmp:
-            create: true
-            plugins:
-              envsubst:
-                init:
-                  command: [sh]
-                  args: ["-c", 'echo "Initializing..."']
-                generate:
-                  command: [sh, -c, "/usr/local/bin/envsubst-plugin.sh"]
-                discover:
-                  filename: "kustomization.yaml"
+            create: false
 
         # Configure the Argo CD server
         server:
@@ -330,87 +321,7 @@ spec:
           metrics:
             enabled: true
             serviceMonitor:
-              enabled: false
-          
-          initContainers:
-            - name: install-envsubst
-              image: debian:stable-slim
-              command: ["/bin/sh", "-c"]
-              args:
-              - echo "Installing envsubst...";
-                apt-get update -y && apt-get install gettext daemontools -y;
-                cp -v /usr/bin/envsubst /usr/bin/envdir /custom-tools/;
-                echo "Done.";
-              volumeMounts:
-              - mountPath: /custom-tools
-                name: custom-tools
-              resources:
-                limits:
-                  memory: "200Mi"
-                requests:
-                  memory: "100Mi"
-                  cpu: "100m"
-          
-          extraContainers:
-            # Create Envsubst Plugin container used for envsubst on resource files
-            - name: envsubst
-              securityContext:
-                runAsNonRoot: true
-                #Bug work-around. Change this back to 999 in the future
-                runAsUser: 999
-              image: quay.io/argoproj/argocd:v3.1.8
-              command: [/var/run/argocd/argocd-cmp-server]
-              args:
-                - --loglevel
-                - debug
-              volumeMounts:
-                - mountPath: /var/run/argocd
-                  name: var-files
-                - mountPath: /home/argocd/cmp-server/plugins
-                  name: plugins
-                - mountPath: /home/argocd/cmp-server/config/plugin.yaml
-                  subPath: envsubst.yaml
-                  name: argocd-cmp-cm
-                - mountPath: /tmp
-                  name: cmp-tmp
-                - mountPath: /usr/local/bin/envsubst
-                  name: custom-tools
-                  subPath: envsubst
-                - mountPath: /usr/local/bin/envdir
-                  name: custom-tools
-                  subPath: envdir
-                - mountPath: /usr/local/bin/envsubst-plugin.sh
-                  name: envsubst-plugin
-                  subPath: envsubst-plugin.sh
-                - mountPath: /home/argocd/cmp-server/config/env
-                  name: envsubst-env-vars # TODO: verify if this is still corect
-                - mountPath: /custom-tools
-                  name: custom-tools
-              resources:
-                limits:
-                  memory: "200Mi"
-                requests:
-                  memory: "100Mi"
-                  cpu: "100m"
-              envFrom:
-                - configMapRef:
-                    name: envsubst-env-vars
-          
-          volumes:
-            - configMap:
-                name: envsubst-plugin
-                defaultMode: 0755
-              name: envsubst-plugin
-            - configMap:
-                name: envsubst-env-vars
-              name: envsubst-env-vars
-            - configMap:
-                name: argocd-cmp-cm
-              name: argocd-cmp-cm
-            - emptyDir: {}
-              name: cmp-tmp
-            - emptyDir: {}
-              name: custom-tools
+              enabled: false         
 
         # Configure the application controller
         controller:
