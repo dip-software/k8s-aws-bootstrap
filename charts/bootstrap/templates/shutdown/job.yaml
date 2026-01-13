@@ -30,6 +30,10 @@ rules:
 - apiGroups: ["apps"]
   resources: ["deployments"]
   verbs: ["get", "list", "patch", "watch"]
+# Webhook management for removing Kyverno webhooks
+- apiGroups: ["admissionregistration.k8s.io"]
+  resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
+  verbs: ["get", "list", "delete"]
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
@@ -73,6 +77,26 @@ spec:
           echo "=========================================="
           echo "Starting Cluster Cleanup Process"
           echo "=========================================="
+          echo ""
+          
+          # Step 0: Remove Kyverno Webhooks (to prevent validation blocking deletion)
+          echo "Step 0: Removing Kyverno Webhooks..."
+          
+          if kubectl get validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg >/dev/null 2>&1; then
+             echo "Deleting validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg..."
+             kubectl delete validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg --ignore-not-found
+             echo "✅ Removed kyverno validating webhook"
+          else
+             echo "⚠️ Kyverno validating webhook not found, skipping..."
+          fi
+
+          if kubectl get mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg >/dev/null 2>&1; then
+             echo "Deleting mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg..."
+             kubectl delete mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg --ignore-not-found
+             echo "✅ Removed kyverno mutating webhook"
+          else
+             echo "⚠️ Kyverno mutating webhook not found, skipping..."
+          fi
           echo ""
           
           # Step 1: Stop Bootstrap ArgoCD App Auto-Sync
