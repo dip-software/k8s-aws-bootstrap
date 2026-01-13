@@ -67,7 +67,7 @@ spec:
       
   # Resource limits to control costs
   limits:
-    cpu: "200"
+    cpu: {{ if .Values.features.shutdown.enabled -}} "0" {{- else -}} "200" {{- end }}
     memory: "200Gi"
     
   # Disruption settings for node lifecycle management

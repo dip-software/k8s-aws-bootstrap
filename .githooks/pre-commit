@@ -1,15 +1,5 @@
 #!/bin/sh
 #
-# Pre-commit hook to verify kustomize build for hsp-aws-platform
-
-echo "Verifying Kustomize build for overlays/hsp-aws-platform..."
-if ! kustomize build overlays/hsp-aws-platform > /dev/null; then
-    echo "Error: Kustomize build failed for overlays/hsp-aws-platform"
-    echo "Please fix the kustomize build errors before committing."
-    # Run again to show the error output to the user
-    kustomize build overlays/hsp-aws-platform
-    exit 1
-fi
-
-echo "Kustomize build passed."
+# Pre-commit hook - Kustomize check removed during migration to Helm
+# TODO: Add Helm verification
 exit 0

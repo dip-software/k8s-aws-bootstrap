@@ -4,7 +4,7 @@ project: "default"
 features:
   # Gateway API overlay components
   gatewayApi:
-    enabled: false
+    enabled: true
     sharedGateway:
       enabled: true
     httproutes:
@@ -13,7 +13,7 @@ features:
   
   # HSP AWS Platform overlay components
   hspAwsPlatform:
-    enabled: false
+    enabled: true
     cloudnativePg:
       enabled: true
     ecrPullThrough:
@@ -22,6 +22,11 @@ features:
       enabled: true
     vpa:
       enabled: true
+
+  # Shutdown mode
+  shutdown:
+    enabled: false
+    image: "alpine/k8s:1.35.0"
 
 environmentConfig:
   # Top-level config

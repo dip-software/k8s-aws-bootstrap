@@ -73,7 +73,7 @@ spec:
       
   # Resource limits for system nodes
   limits:
-    cpu: "100"
+    cpu: {{ if .Values.features.shutdown.enabled -}} "0" {{- else -}} "100" {{- end }}
     memory: "200Gi"
     
   # Disruption settings for system node lifecycle management

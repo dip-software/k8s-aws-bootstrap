@@ -1,3 +1,4 @@
+{{- if .Values.features.shutdown.enabled -}}
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -62,7 +63,7 @@ spec:
       containers:
       - name: cleanup
         # renovate: datasource=docker depName=alpine/k8s
-        image: alpine/k8s:1.35.0
+        image: {{ .Values.features.shutdown.image }}
         command:
         - sh
         - -c
@@ -197,3 +198,4 @@ spec:
       tolerations:
       - key: CriticalAddonsOnly
         operator: Exists
+{{- end }}

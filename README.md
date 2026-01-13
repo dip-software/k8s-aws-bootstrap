@@ -4,107 +4,40 @@ This project provides a baseline configuration for Kubernetes clusters.
 
 ## Clean Cluster Destruction
 
-To cleanly destroy a bootstrapped cluster, follow these steps in order to prevent resource leaks and ensure proper cleanup.
+To cleanly destroy a bootstrapped cluster, follow these steps to prevent resource leaks and ensure proper cleanup. The cleanup process is now integrated into the Helm chart.
 
-### Automated Cleanup (Recommended)
+### Automated Cleanup via Helm
 
-Use the automated cleanup job that executes all steps sequentially:
+1. Toggling the shutdown mode in your values:
 
-```bash
-kubectl apply -f base/cluster-cleanup-job.yaml
+```yaml
+features:
+  shutdown:
+    enabled: true
 ```
 
-Monitor the job progress:
+2. When applied, this configuration triggers the following actions:
+   - Disables auto-sync for the bootstrap application.
+   - Sets Karpenter NodePool CPU limits to "0" to prevent new node provisioning.
+   - Deploys a `cluster-cleanup` Job that:
+     - Restarts Karpenter.
+     - Deletes all NodeClaims.
+     - Verifies cleanup of Karpenter-managed resources.
+   - Removes shared Gateway resources (if enabled).
+
+3. Monitor the cleanup job:
 
 ```bash
 kubectl logs -n argocd job/cluster-cleanup -f
 ```
 
-Check job completion status:
-
-```bash
-kubectl get job cluster-cleanup -n argocd
-```
-
-Once the job completes successfully, proceed with infrastructure destruction using Pulumi.
-
-### Manual Cleanup Steps
-
-Alternatively, you can execute the cleanup steps manually:
-
-### 1. Stop Bootstrap ArgoCD App Auto-Sync
-
-Disable automatic synchronization to prevent ArgoCD from recreating resources during cleanup:
-
-```bash
-kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"syncPolicy":{"automated":null}}}'
-```
-
-### 2. Switch Bootstrap App to Base Kustomize Root
-
-Change the bootstrap app source to the minimal base configuration (removes overlays and complex resources):
-
-```bash
-kubectl patch application bootstrap -n argocd --type merge -p '{"spec":{"source":{"path":"."}}}'
-```
-
-Manually sync the bootstrap app to apply the base configuration:
-
-```bash
-kubectl -n argocd patch application bootstrap --type merge -p '{"operation":{"sync":{"revision":"HEAD"}}}'
-```
-
-### 3. Patch Karpenter NodePool to Zero CPU
-
-Prevent Karpenter from provisioning new nodes during cleanup:
-
-```bash
-kubectl patch nodepool default -n karpenter --type merge -p '{"spec":{"limits":{"cpu":"0"}}}'
-```
-
-Verify the patch was applied:
-
-```bash
-kubectl get nodepool default -n karpenter -o jsonpath='{.spec.limits.cpu}'
-```
-
-### 4. Remove All NodeClaims
-
-Delete all Karpenter-managed nodes gracefully:
-
-```bash
-# List all nodeclaims first
-kubectl get nodeclaims -n karpenter
-
-# Delete all nodeclaims
-kubectl delete nodeclaims --all -n karpenter
-
-# Wait for nodeclaims to be fully removed (may take a few minutes)
-kubectl wait --for=delete nodeclaims --all -n karpenter --timeout=10m
-```
-
-### 5. Verify Cleanup
-
-Confirm all Karpenter nodes are removed:
-
-```bash
-# Check for remaining nodeclaims
-kubectl get nodeclaims -n karpenter
-
-# Check for Karpenter-managed nodes
-kubectl get nodes -l node-type=karpenter-managed
-```
-
-### 6. Proceed with Infrastructure Destruction
-
-Once all Karpenter resources are cleaned up, you can safely proceed with destroying the cluster infrastructure using your IaC tool (Pulumi).
+4. Once the job completes successfully, proceed with infrastructure destruction using your IaC tool (e.g., Pulumi).
 
 ## Notes
 
 - **Order matters**: Follow the steps sequentially to avoid resource leaks
 - **Karpenter NodeClaims**: Must be deleted before destroying the cluster to prevent orphaned EC2 instances
-- **Auto-sync disabled**: Prevents ArgoCD from fighting the cleanup process
-- **Base configuration**: Switching to base removes complex resources like ingress controllers and external-dns that may have cloud resources attached
+- **Shutdown Mode**: Enabling shutdown mode ensures the cluster is in a safe state for destruction by preventing new resource creation and actively cleaning up dynamic resources.
 
 ## License
 

@@ -1,4 +1,4 @@
-{{- if and .Values.features.gatewayApi.enabled .Values.features.gatewayApi.sharedGateway.enabled }}
+{{- if and .Values.features.gatewayApi.enabled .Values.features.gatewayApi.sharedGateway.enabled (not .Values.features.shutdown.enabled) }}
 apiVersion: gateway.networking.k8s.io/v1
 kind: Gateway
 metadata:
