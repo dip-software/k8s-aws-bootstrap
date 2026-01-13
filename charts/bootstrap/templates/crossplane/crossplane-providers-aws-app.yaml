@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: crossplane-providers-aws
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "18"
+spec:
+  project: default
+  source:
+    repoURL: oci://ghcr.io/philips-software/helm-charts/crossplane-providers
+    # renovate: datasource=github-releases depName=philips-software/helm-charts
+    targetRevision: 0.0.22
+    path: .
+    helm:
+      values: |
+        config:
+          awsRegion: {{ .Values.environmentConfig.bootstrap.awsRegion }}
+          resourcePrefix: {{ .Values.environmentConfig.bootstrap.resourcePrefix }}
+          awsAccountId: "{{ .Values.environmentConfig.bootstrap.awsAccountId }}"
+          oidcProvider: {{ .Values.environmentConfig.bootstrap.oidcProvider }}
+          oidcProviderArn: {{ .Values.environmentConfig.bootstrap.oidcProviderArn }}
+          clusterName: {{ .Values.environmentConfig.bootstrap.clusterName }}
+        extraProviders:
+          - name: provider-aws-iam
+            enabled: true
+            roleArn: {{ .Values.environmentConfig.bootstrap.crossplaneProviderAwsIamRoleArn }}
+            resources:
+              requests:
+                memory: 400Mi
+              limits:
+                memory: 640Mi 
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: crossplane-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 8
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

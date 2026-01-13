@@ -1,0 +1,11 @@
+{{- if .Values.features.gatewayApi.enabled }}
+apiVersion: apiextensions.crossplane.io/v1beta1
+kind: EnvironmentConfig
+metadata:
+  name: k8s-aws-bootstrap-overlay-gateway-api-features
+  labels:
+    config: dip-software
+data:
+  features:
+    gatewayApi: true
+{{- end }}

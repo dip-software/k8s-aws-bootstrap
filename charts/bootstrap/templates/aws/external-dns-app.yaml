@@ -4,32 +4,40 @@ metadata:
   name: external-dns
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "10"
+    argocd.argoproj.io/sync-wave: "6"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: {{ .Values.project }}
+  project: default
   source:
     repoURL: https://kubernetes-sigs.github.io/external-dns/
     chart: external-dns
     # renovate: datasource=helm registryUrl=https://kubernetes-sigs.github.io/external-dns depName=external-dns
-    targetRevision: 1.19.0
+    targetRevision: 1.20.0
     helm:
       valuesObject:
+        policy: sync
         sources:
           - service
           - ingress
           - gateway-httproute
         # Require critical addon nodes for external-dns (critical)
-        nodeSelector:
-          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
         resources:
           limits:
-            memory: 64Mi
+            memory: 76Mi
           requests:
             cpu: 20m
             memory: 32Mi
@@ -39,7 +47,7 @@ spec:
           annotations:
             eks.amazonaws.com/role-arn: {{ .Values.environmentConfig.bootstrap.awsExternalDnsRoleArn }}
         domainFilters:
-          - {{ .Values.environmentConfig.clusterFqdn }}
+          - {{ .Values.environmentConfig.bootstrap.clusterFqdn }}
   destination:
     server: https://kubernetes.default.svc
     namespace: external-dns

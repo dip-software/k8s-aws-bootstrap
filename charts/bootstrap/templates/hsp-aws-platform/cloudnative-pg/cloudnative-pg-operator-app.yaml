@@ -1,0 +1,46 @@
+{{- if and .Values.features.hspAwsPlatform.enabled .Values.features.hspAwsPlatform.cloudnativePg }}
+apiVersion: dip.io/v1alpha1
+kind: HelmApplication
+metadata:
+  name: cloudnative-pg-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  project: default
+  source:
+    repoURL: https://cloudnative-pg.io/charts/
+    # renovate: datasource=helm registryUrl=https://cloudnative-pg.io/charts depName=cloudnative-pg
+    targetRevision: 0.27.0
+    chart: cloudnative-pg
+    withConfigKeys:
+      - resourcePrefix
+    helm:
+      valuesObject:
+        fullnameOverride: cloudnative-pg
+        # Default namespace for the operator
+        namespace: cnpg-system
+        # Resource limits for the operator
+        resources:
+          limits:
+            memory: 256Mi
+          requests:
+            cpu: 5m
+            memory: 64Mi
+  destination:
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+{{- end }}

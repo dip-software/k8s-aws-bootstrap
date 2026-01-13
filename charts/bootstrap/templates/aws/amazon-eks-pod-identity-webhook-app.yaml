@@ -4,25 +4,33 @@ metadata:
   name: amazon-eks-pod-identity-webhook
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "6"
+    argocd.argoproj.io/sync-wave: "2"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: {{ .Values.project }}
+  project: default
   source:
     repoURL: https://jkroepke.github.io/helm-charts/
     # renovate: datasource=helm registryUrl=https://jkroepke.github.io/helm-charts depName=amazon-eks-pod-identity-webhook
-    targetRevision: 2.5.6
+    targetRevision: 2.5.8
     chart: amazon-eks-pod-identity-webhook 
     helm:
       valuesObject: 
-        replicaCount: 2
+        replicaCount: 1
         # Require critical addon nodes for pod identity webhook (critical)
-        nodeSelector: {node-type: system}
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
         resources:
           limits:
             memory: 32Mi
@@ -31,14 +39,14 @@ spec:
             memory: 20Mi
         config:
           stsRegionalEndpoint: true
-          defaultAwsRegion: {{ .Values.environmentConfig.region }}
+          defaultAwsRegion: {{ .Values.environmentConfig.bootstrap.awsRegion }}
           extraArgs:
             - --service-account-lookup-grace-period=2s
         image:
           registry: public.ecr.aws
           repository: eks/amazon-eks-pod-identity-webhook
         # Use cert-manager for TLS certificates
-        # cert-manager installs first (wave 4), then webhook can use it (wave 5)
+        # cert-manager installs first (wave 1), then webhook can use it (wave 2)
         pki:
           certManager:
             enabled: true

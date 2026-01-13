@@ -1,0 +1,76 @@
+project: "default"
+
+# Feature flags for optional components
+features:
+  # Gateway API overlay components
+  gatewayApi:
+    enabled: false
+    sharedGateway:
+      enabled: true
+    httproutes:
+      argocd: true
+      grafana: true
+  
+  # HSP AWS Platform overlay components
+  hspAwsPlatform:
+    enabled: false
+    cloudnativePg:
+      enabled: true
+    ecrPullThrough:
+      enabled: true
+    hspAddons:
+      enabled: true
+    vpa:
+      enabled: true
+
+environmentConfig:
+  # Top-level config
+  sharedServicesAccountId: ""
+  
+  bootstrap:
+    # Core identifiers
+    resourcePrefix: ""
+    awsAccountId: ""
+    awsPartition: "aws"
+    awsRegion: ""
+    
+    # Cluster info
+    clusterName: ""
+    clusterFqdn: ""
+    clusterHost: ""
+    clusterEndpoint: ""
+    
+    # OIDC
+    oidcProvider: ""
+    oidcProviderArn: ""
+    
+    # VPC
+    awsVpcId: ""
+    awsPrivateSubnetIds: ""
+    
+    # IAM Role ARNs
+    awsLbcRoleArn: ""
+    awsEbsCsiDriverRoleArn: ""
+    awsExternalDnsRoleArn: ""
+    certManagerRoleArn: ""
+    karpenterRoleArn: ""
+    crossplaneProviderAwsIamRoleArn: ""
+    
+    # Karpenter
+    karpenterInstanceProfile: ""
+    
+    # K3S (for EC2NodeClass)
+    k3sTokenParameterName: ""
+    k3sVersionParameterName: ""
+    k3sChannel: ""
+    
+    # Subnet Groups (JSON strings)
+    awsRdsSubnetGroup: ""
+    awsRedshiftSubnetGroup: ""
+    awsElasticacheSubnetGroup: ""
+    
+    # Security Groups (JSON strings)
+    awsRdsSecurityGroups: ""
+    awsRedshiftSecurityGroups: ""
+    awsElasticacheSecurityGroups: ""
+    awsActivemqSecurityGroups: ""

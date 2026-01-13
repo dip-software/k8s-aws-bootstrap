@@ -1,0 +1,17 @@
+apiVersion: v2
+name: bootstrap
+version: 0.1.2
+description: A Helm chart for bootstrapping Kubernetes clusters with AWS infrastructure components
+type: application
+keywords:
+  - aws
+  - bootstrap
+  - dip
+  - infrastructure
+  - platform
+  - kubernetes
+  - helm
+  - argocd
+  - crossplane
+  - karpenter
+  - cilium

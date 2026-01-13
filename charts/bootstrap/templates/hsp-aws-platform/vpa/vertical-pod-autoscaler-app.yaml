@@ -1,0 +1,86 @@
+{{- if and .Values.features.hspAwsPlatform.enabled .Values.features.hspAwsPlatform.vpa }}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vertical-pod-autoscaler
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://cowboysysop.github.io/charts/
+    # renovate: datasource=helm registryUrl=https://cowboysysop.github.io/charts/ depName=vertical-pod-autoscaler
+    targetRevision: 11.1.1
+    chart: vertical-pod-autoscaler
+    helm:
+      valuesObject:
+        # CRDs configuration - use registry.k8s.io instead of docker.io/bitnami
+        crds:
+          image:
+            registry: registry.k8s.io
+            repository: kubectl
+            # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+            tag: v1.31.3
+        
+        # Admission controller configuration
+        admissionController:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 5m
+              memory: 32Mi
+            limits:
+              memory: 64Mi
+        
+        # Recommender configuration
+        recommender:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 5m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+        
+        # Updater configuration
+        updater:
+          enabled: true
+          replicaCount: 1
+          
+          resources:
+            requests:
+              cpu: 5m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+        
+        # Metrics
+        metrics:
+          serviceMonitor:
+            enabled: false
+  
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vpa-system
+  
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+{{- end }}

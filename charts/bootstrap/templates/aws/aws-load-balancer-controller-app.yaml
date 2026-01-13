@@ -8,17 +8,17 @@ metadata:
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
-  project: {{ .Values.project }}
+  project: default
   source:
     repoURL: https://aws.github.io/eks-charts
     # renovate: datasource=helm registryUrl=https://aws.github.io/eks-charts depName=aws-load-balancer-controller
-    targetRevision: 1.14.1
+    targetRevision: 1.17.1
     chart: aws-load-balancer-controller
     helm:
       valuesObject: 
         syncPeriod: 0h5m0s
-        clusterName: {{ .Values.environmentConfig.clusterName }}
-        region: {{ .Values.environmentConfig.region }}
+        clusterName: {{ .Values.environmentConfig.bootstrap.clusterName }}
+        region: {{ .Values.environmentConfig.bootstrap.awsRegion }}
         vpcId: {{ .Values.environmentConfig.bootstrap.awsVpcId }}
         serviceAccount:
           create: true
@@ -26,19 +26,26 @@ spec:
           annotations:
             eks.amazonaws.com/role-arn: {{ .Values.environmentConfig.bootstrap.awsLbcRoleArn }}
         # Additional recommended settings for production
-        replicaCount: 2
+        replicaCount: 1
         resources:
           limits:
             memory: 128Mi
           requests:
             cpu: 5m
             memory: 42Mi
-        nodeSelector:
-          node-type: system
         tolerations:
         - key: CriticalAddonsOnly
           operator: Exists
         affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
           podAntiAffinity:
             preferredDuringSchedulingIgnoredDuringExecution:
             - weight: 100

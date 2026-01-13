@@ -1,0 +1,56 @@
+{{- if and .Values.features.hspAwsPlatform.enabled .Values.features.hspAwsPlatform.hspAddons }}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hsp-addons
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: hsp-addons
+  namespace: hsp-addons
+  labels:
+    cache.kyverno.io/enabled: "true"
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+data:
+  accountId: |
+    {{ .Values.environmentConfig.bootstrap.awsAccountId }}
+  sharedServicesAccountId: |
+    {{ .Values.environmentConfig.sharedServicesAccountId }}
+  region: {{ .Values.environmentConfig.bootstrap.awsRegion }}
+  partition: {{ .Values.environmentConfig.bootstrap.awsPartition }}
+  enabledPullThroughRegistries: |
+    ["docker-hub","quay","github","k8s","ecr-public"]
+  eks: |
+    {
+      "oidcProviderArn": "{{ .Values.environmentConfig.bootstrap.oidcProviderArn }}",
+      "oidcProvider": "{{ .Values.environmentConfig.bootstrap.oidcProvider }}",
+      "clusterName": "{{ .Values.environmentConfig.bootstrap.clusterName }}",
+      "clusterId": "{{ .Values.environmentConfig.bootstrap.clusterName }}",
+      "resourcePrefix": "{{ .Values.environmentConfig.bootstrap.resourcePrefix }}",
+      "clusterFqdn": "{{ .Values.environmentConfig.bootstrap.clusterFqdn }}",
+      "clusterEndpoint": "{{ .Values.environmentConfig.bootstrap.clusterEndpoint }}"
+    }
+  servicesVpc: |
+    {
+      "id": "{{ .Values.environmentConfig.bootstrap.awsVpcId }}",
+      "privateSubnetIds": {{ .Values.environmentConfig.bootstrap.awsPrivateSubnetIds }},
+      "subnetGroups": {
+        "database": {{ .Values.environmentConfig.bootstrap.awsRdsSubnetGroup }},
+        "redshift": {{ .Values.environmentConfig.bootstrap.awsRedshiftSubnetGroup }},
+        "elasticache": {{ .Values.environmentConfig.bootstrap.awsElasticacheSubnetGroup }}
+      },
+      "securityGroups": {
+        "database": {{ .Values.environmentConfig.bootstrap.awsRdsSecurityGroups }},
+        "redshift": {{ .Values.environmentConfig.bootstrap.awsRedshiftSecurityGroups }},
+        "elasticache": {{ .Values.environmentConfig.bootstrap.awsElasticacheSecurityGroups }},
+        "activemq": {{ .Values.environmentConfig.bootstrap.awsActivemqSecurityGroups }}
+      }
+    }
+  tags: |
+    {
+      "Environment": "{{ .Values.environmentConfig.bootstrap.resourcePrefix }}"
+    }
+{{- end }}

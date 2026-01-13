@@ -1,0 +1,227 @@
+{{- if and .Values.features.hspAwsPlatform.enabled .Values.features.hspAwsPlatform.hspAddons }}
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: environmentconfig-creator
+  namespace: hsp-addons
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: environmentconfig-creator
+rules:
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list"]
+  - apiGroups: ["apiextensions.crossplane.io"]
+    resources: ["environmentconfigs"]
+    verbs: ["create", "get", "list", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: environmentconfig-creator
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: environmentconfig-creator
+subjects:
+  - kind: ServiceAccount
+    name: environmentconfig-creator
+    namespace: hsp-addons
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: create-environmentconfig
+  namespace: hsp-addons
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+    argocd.argoproj.io/hook: Sync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  backoffLimit: 3
+  template:
+    metadata:
+      labels:
+        app: environmentconfig-creator
+    spec:
+      serviceAccountName: environmentconfig-creator
+      restartPolicy: OnFailure
+      initContainers:
+        - name: install-kubectl
+          # renovate: datasource=docker depName=alpine versioning=docker
+          image: alpine:3.21
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              
+              # Detect architecture
+              ARCH=$(uname -m)
+              case $ARCH in
+                x86_64)
+                  KUBECTL_ARCH="amd64"
+                  JQ_ARCH="amd64"
+                  ;;
+                aarch64|arm64)
+                  KUBECTL_ARCH="arm64"
+                  JQ_ARCH="arm64"
+                  ;;
+                *)
+                  echo "Unsupported architecture: $ARCH"
+                  exit 1
+                  ;;
+              esac
+              
+              echo "Detected architecture: $ARCH (kubectl: $KUBECTL_ARCH, jq: $JQ_ARCH)"
+              
+              # Download kubectl
+              # renovate: datasource=github-releases depName=kubernetes/kubernetes extractVersion=^v(?<version>.*)$
+              KUBECTL_VERSION=v1.31.3
+              echo "Downloading kubectl ${KUBECTL_VERSION} for ${KUBECTL_ARCH}..."
+              wget -O /tools/kubectl https://dl.k8s.io/release/${KUBECTL_VERSION}/bin/linux/${KUBECTL_ARCH}/kubectl
+              chmod +x /tools/kubectl
+              
+              # Download jq
+              # renovate: datasource=github-releases depName=jqlang/jq
+              JQ_VERSION=1.7.1
+              echo "Downloading jq ${JQ_VERSION} for ${JQ_ARCH}..."
+              wget -O /tools/jq https://github.com/jqlang/jq/releases/download/jq-${JQ_VERSION}/jq-linux-${JQ_ARCH}
+              chmod +x /tools/jq
+              
+              # Download yq
+              # renovate: datasource=github-releases depName=mikefarah/yq
+              YQ_VERSION=v4.44.3
+              echo "Downloading yq ${YQ_VERSION} for ${KUBECTL_ARCH}..."
+              wget -O /tools/yq https://github.com/mikefarah/yq/releases/download/${YQ_VERSION}/yq_linux_${KUBECTL_ARCH}
+              chmod +x /tools/yq
+              
+              echo "Tools installed successfully"
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
+          resources:
+            requests:
+              cpu: 10m
+              memory: 64Mi
+            limits:
+              memory: 128Mi
+      containers:
+        - name: create-environmentconfig
+          # renovate: datasource=docker depName=alpine versioning=docker
+          image: alpine:3.21
+          command:
+            - sh
+            - -c
+            - |
+              set -e
+              
+              export PATH="/tools:$PATH"
+              
+              echo "Reading ConfigMap hsp-addons..."
+              
+              # Get all keys from the ConfigMap
+              KEYS=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath='{.data}' | jq -r 'keys[]')
+              
+              # Start building the EnvironmentConfig manifest (without indentation in heredoc)
+              cat > /tmp/environmentconfig.yaml <<'EOFMANIFEST'
+              apiVersion: apiextensions.crossplane.io/v1beta1
+              kind: EnvironmentConfig
+              metadata:
+                name: hsp-addons
+              data:
+              EOFMANIFEST
+              
+              # Add each ConfigMap key-value pair to the EnvironmentConfig
+              for KEY in $KEYS; do
+                echo "Processing key: $KEY"
+                VALUE=$(kubectl get configmap hsp-addons -n hsp-addons -o jsonpath="{.data.$KEY}")
+                
+                # Check if it's a JSON object or array (not just a scalar)
+                if echo "$VALUE" | jq -e 'type | . == "object" or . == "array"' >/dev/null 2>&1; then
+                  # It's valid JSON object/array - convert to YAML
+                  echo "  $KEY:" >> /tmp/environmentconfig.yaml
+                  echo "$VALUE" | yq -p json -o yaml -I 2 -N | sed 's/^/    /' >> /tmp/environmentconfig.yaml
+                else
+                  # Not a JSON object/array (could be scalar, string, or invalid JSON) - treat as string
+                  CLEAN_VALUE=$(echo "$VALUE" | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+                  # Escape any double quotes in the value
+                  ESCAPED_VALUE=$(echo "$CLEAN_VALUE" | sed 's/"/\\"/g')
+                  echo "  $KEY: \"$ESCAPED_VALUE\"" >> /tmp/environmentconfig.yaml
+                fi
+              done
+              
+              echo ""
+              echo "=========================================="
+              echo "Complete EnvironmentConfig manifest:"
+              echo "=========================================="
+              cat /tmp/environmentconfig.yaml
+              echo "=========================================="
+              
+              echo ""
+              echo "Applying EnvironmentConfig..."
+              set +e  # Don't exit immediately on error
+              APPLY_OUTPUT=$(kubectl apply -f /tmp/environmentconfig.yaml 2>&1)
+              APPLY_EXIT_CODE=$?
+              set -e
+              
+              if [ $APPLY_EXIT_CODE -ne 0 ]; then
+                echo ""
+                echo "=========================================="
+                echo "ERROR: Failed to apply EnvironmentConfig!"
+                echo "=========================================="
+                echo "kubectl exit code: $APPLY_EXIT_CODE"
+                echo ""
+                echo "kubectl output:"
+                echo "$APPLY_OUTPUT"
+                echo ""
+                echo "=========================================="
+                echo "Diagnostic information:"
+                echo "=========================================="
+                echo ""
+                echo "Checking if the resource exists..."
+                kubectl get environmentconfig hsp-addons -o yaml 2>&1 || echo "EnvironmentConfig does not exist"
+                echo ""
+                echo "Checking CRD..."
+                kubectl get crd environmentconfigs.apiextensions.crossplane.io 2>&1 || echo "CRD does not exist"
+                echo ""
+                echo "Checking all CRDs related to crossplane..."
+                kubectl get crd | grep crossplane || echo "No crossplane CRDs found"
+                echo ""
+                echo "Last 30 lines of the generated manifest:"
+                tail -30 /tmp/environmentconfig.yaml
+                echo ""
+                echo "=========================================="
+                echo "Sleeping for 300 seconds to allow debugging..."
+                sleep 300
+                exit 1
+              fi
+              
+              echo ""
+              echo "=========================================="
+              echo "EnvironmentConfig created successfully!"
+              echo "=========================================="
+              echo "Verifying..."
+              kubectl get environmentconfig hsp-addons -o yaml
+          volumeMounts:
+            - name: tools
+              mountPath: /tools
+          resources:
+            requests:
+              cpu: 10m
+              memory: 256Mi
+            limits:
+              memory: 320Mi
+      volumes:
+        - name: tools
+          emptyDir: {}
+      nodeSelector:
+        node-type: system
+      tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+{{- end }}

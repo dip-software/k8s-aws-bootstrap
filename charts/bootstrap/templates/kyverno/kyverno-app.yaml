@@ -1,0 +1,143 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kyverno
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: kyverno
+    server: https://kubernetes.default.svc
+  project: default
+  source:
+    chart: kyverno
+    repoURL: https://kyverno.github.io/kyverno
+    # renovate: datasource=helm registryUrl=https://kyverno.github.io/kyverno depName=kyverno
+    targetRevision: 3.6.2
+    helm:
+      valuesObject:
+        admissionController:
+          replicas: 2
+          # Run admission controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure admission controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: admission-controller
+          container:
+            resources:
+              limits:
+                memory: 256Mi
+              requests:
+                cpu: 5m
+                memory: 128Mi
+        backgroundController:
+          replicas: 2
+          # Run background controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure background controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: background-controller
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+        cleanupController:
+          replicas: 2
+          # Run cleanup controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure cleanup controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: cleanup-controller
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 5m
+              memory: 32Mi
+        reportsController:
+          replicas: 2
+          # Run reports controller on system nodes (critical component)
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          # Ensure reports controller pods are distributed across availability zones for high availability
+          topologySpreadConstraints:
+          - maxSkew: 1
+            topologyKey: topology.kubernetes.io/zone
+            whenUnsatisfiable: DoNotSchedule
+            labelSelector:
+              matchLabels:
+                app.kubernetes.io/component: reports-controller
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 5m
+              memory: 64Mi
+        # CRD migration and webhook cleanup jobs
+        crds:
+          migration:
+            nodeSelector:
+              node-type: system
+            tolerations:
+            - key: CriticalAddonsOnly
+              operator: Exists
+            podResources:
+              limits:
+                memory: 256Mi
+              requests:
+                cpu: 5m
+                memory: 64Mi
+        webhooksCleanup:
+          nodeSelector:
+            node-type: system
+          tolerations:
+          - key: CriticalAddonsOnly
+            operator: Exists
+          resources:
+            limits:
+              memory: 128Mi
+            requests:
+              cpu: 5m
+              memory: 32Mi
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
