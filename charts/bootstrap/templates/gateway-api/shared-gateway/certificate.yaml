@@ -1,0 +1,18 @@
+{{- if and .Values.features.gatewayApi.enabled .Values.features.gatewayApi.sharedGateway.enabled }}
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: {{ .Values.environmentConfig.bootstrap.resourcePrefix }}-wildcard
+  namespace: gateway
+  annotations:
+    argocd.argoproj.io/sync-wave: "8"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  secretName: {{ .Values.environmentConfig.bootstrap.resourcePrefix }}-wildcard-tls
+  issuerRef:
+    name: letsencrypt-prod
+    kind: ClusterIssuer
+  dnsNames:
+    - "*.{{ .Values.environmentConfig.bootstrap.clusterFqdn }}"
+    - "{{ .Values.environmentConfig.bootstrap.clusterFqdn }}"
+{{- end }}

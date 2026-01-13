@@ -1,0 +1,26 @@
+{{- if and .Values.features.gatewayApi.enabled .Values.features.gatewayApi.httproutes.argocd }}
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: argocd-server-route
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "20"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    link.argocd.argoproj.io/external-link: https://argocd.{{ .Values.environmentConfig.bootstrap.clusterFqdn }}
+spec:
+  parentRefs:
+    - name: shared-gateway
+      namespace: gateway
+      sectionName: https
+  hostnames:
+    - argocd.{{ .Values.environmentConfig.bootstrap.clusterFqdn }}
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: argocd-server
+          port: 80
+{{- end }}

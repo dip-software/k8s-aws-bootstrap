@@ -1,0 +1,210 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cilium
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://helm.cilium.io/
+    chart: cilium
+    # renovate: datasource=helm registryUrl=https://helm.cilium.io depName=cilium
+    targetRevision: 1.18.5
+    helm:
+      valuesObject:
+        # IPAM Configuration
+        ipam:
+          mode: kubernetes
+          operator:
+            clusterPoolIPv4PodCIDRList:
+              - "10.42.0.0/16"
+        
+        # Networking Configuration
+        tunnelProtocol: vxlan
+        autoDirectNodeRoutes: false
+        routingMode: tunnel
+        kubeProxyReplacement: true
+        
+        # API Server Configuration
+        k8sServiceHost: "{{ .Values.environmentConfig.bootstrap.clusterHost }}"
+        k8sServicePort: "6443"
+        
+        # Socket-level Load Balancing
+        socketLB:
+          enabled: true
+          hostNamespaceOnly: false
+        
+        # IPv4/IPv6 Configuration
+        enableIPv4Masquerade: true
+        enableIPv6: false
+        
+        # BPF Configuration
+        bpf:
+          masquerade: true
+          tproxy: true
+          lbExternalClusterIP: true
+        
+        # Load Balancer Configuration
+        loadBalancer:
+          algorithm: random
+          mode: snat
+        
+        # Gateway API Configuration
+        gatewayAPI:
+          enabled: true
+          externalTrafficPolicy: Cluster
+        
+        # Envoy Configuration
+        envoy:
+          enabled: true
+          resources:
+            limits:
+              memory: 50Mi
+            requests:
+              cpu: 20m
+              memory: 32Mi
+          
+        # Hubble Observability Platform
+        hubble:
+          enabled: true
+          relay:
+            enabled: true
+            replicas: 1
+            nodeSelector:
+              node-type: system
+            tolerations:
+              - key: node.kubernetes.io/not-ready
+                operator: Exists
+              - key: node.kubernetes.io/unreachable
+                operator: Exists
+              - key: CriticalAddonsOnly
+                operator: Exists
+            resources:
+              limits:
+                memory: 40Mi
+              requests:
+                cpu: 20m
+                memory: 32Mi
+          ui:
+            enabled: true
+            replicas: 1
+            nodeSelector:
+              node-type: system
+            tolerations:
+              - key: node.kubernetes.io/not-ready
+                operator: Exists
+              - key: node.kubernetes.io/unreachable
+                operator: Exists
+              - key: CriticalAddonsOnly
+                operator: Exists
+            backend:
+              resources:
+                limits:
+                  memory: 64Mi
+                requests:
+                  cpu: 10m
+                  memory: 32Mi
+            frontend:
+              resources:
+                limits:
+                  memory: 32Mi
+                requests:
+                  cpu: 10m
+                  memory: 16Mi
+          metrics:
+            enabled:
+              - dns
+              - drop
+              - tcp
+              - flow
+              - icmp
+              - http
+        
+        # Operator Configuration
+        operator:
+          replicas: 1
+          tolerations:
+            - key: node.kubernetes.io/not-ready
+              operator: Exists
+            - key: node.kubernetes.io/unreachable
+              operator: Exists
+            - key: node.kubernetes.io/disk-pressure
+              operator: Exists
+            - key: node.kubernetes.io/memory-pressure
+              operator: Exists
+            - key: node.kubernetes.io/pid-pressure
+              operator: Exists
+            - key: node.kubernetes.io/unschedulable
+              operator: Exists
+            - key: CriticalAddonsOnly
+              operator: Exists
+          resources:
+            limits:
+              memory: 256Mi
+            requests:
+              cpu: 50m
+              memory: 128Mi
+        
+        # Agent (DaemonSet) Configuration
+        tolerations:
+          - key: node.kubernetes.io/not-ready
+            operator: Exists
+          - key: node.kubernetes.io/unreachable
+            operator: Exists
+          - key: node.kubernetes.io/disk-pressure
+            operator: Exists
+          - key: node.kubernetes.io/memory-pressure
+            operator: Exists
+          - key: node.kubernetes.io/pid-pressure
+            operator: Exists
+          - key: node.kubernetes.io/unschedulable
+            operator: Exists
+          - key: CriticalAddonsOnly
+            operator: Exists
+          - key: node.cilium.io/agent-not-ready
+            operator: Exists
+        
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 100m
+            memory: 256Mi
+        
+        # Device Configuration
+        devices: ""
+        directRoutingDevice: ""
+        
+        # Encryption Configuration
+        encryption:
+          enabled: false
+          type: wireguard
+        
+        # Policy Configuration
+        policyEnforcementMode: default
+        identityAllocationMode: crd
+        
+        # API Rate Limiting
+        k8sClientRateLimit:
+          qps: 10
+          burst: 20
+
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=false
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 3

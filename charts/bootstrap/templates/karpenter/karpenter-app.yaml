@@ -1,0 +1,125 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: karpenter
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: oci://public.ecr.aws/karpenter/karpenter
+    # renovate: datasource=github-releases depName=aws/karpenter-provider-aws
+    targetRevision: 1.8.3
+    path: .
+    helm:
+      valuesObject:
+        topologySpreadConstraints: []
+        controller:
+          resources:
+            requests:
+              cpu: 50m
+              memory: 184Mi
+            limits:
+              memory: 256Mi
+        settings:
+          # Enable faster sync for quicker node health detection
+          syncPeriod: 0h1m0s
+          clusterName: {{ .Values.environmentConfig.bootstrap.clusterName }}
+          clusterEndpoint: {{ .Values.environmentConfig.bootstrap.clusterEndpoint }}
+          # Enable drift detection for automatic node repair
+          featureGates:
+            drift: true
+            spotToSpotConsolidation: true
+          # Optimize batching for responsive node health checks
+          batchMaxDuration: 10s
+          batchIdleDuration: 1s
+          aws:
+            defaultInstanceProfile: {{ .Values.environmentConfig.bootstrap.karpenterInstanceProfile }}
+            region: {{ .Values.environmentConfig.bootstrap.awsRegion }}
+            vpcId: {{ .Values.environmentConfig.bootstrap.awsVpcId }}
+            subnetSelector:
+              karpenter.sh/discovery/{{ .Values.environmentConfig.bootstrap.clusterName }}: "{{ .Values.environmentConfig.bootstrap.clusterName }}"
+            securityGroupSelector:
+              karpenter.sh/discovery/{{ .Values.environmentConfig.bootstrap.clusterName }}: "{{ .Values.environmentConfig.bootstrap.clusterName }}"
+        # Replica count for high availability
+        replicas: 1
+        
+        # Service account configuration with IRSA
+        serviceAccount:
+          create: true
+          name: karpenter
+          annotations:
+            eks.amazonaws.com/role-arn: {{ .Values.environmentConfig.bootstrap.karpenterRoleArn }}
+        
+        # Webhook configuration
+        webhook:
+          enabled: true
+          port: 8443
+        
+        # Logging configuration - Enable debug logging for detailed troubleshooting
+        logLevel: debug
+        
+        # Node affinity and tolerations - Run only on system nodes
+        affinity:
+          nodeAffinity:
+            requiredDuringSchedulingIgnoredDuringExecution:
+              nodeSelectorTerms:
+              - matchExpressions:
+                - key: karpenter.sh/nodepool
+                  operator: DoesNotExist
+                - key: node-type
+                  operator: In
+                  values:
+                  - system
+                  - control-plane
+          podAntiAffinity:
+            preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                labelSelector:
+                  matchExpressions:
+                  - key: app.kubernetes.io/name
+                    operator: In
+                    values:
+                    - karpenter
+                topologyKey: kubernetes.io/hostname
+        
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+        
+        # Security configuration
+        securityContext:
+          fsGroup: 65532
+        
+        # Additional settings for production
+        dnsPolicy: Default
+        dnsConfig:
+          options:
+          - name: ndots
+            value: "1"
+        
+        # Metrics and monitoring
+        serviceMonitor:
+          enabled: false
+          additionalLabels:
+            release: prometheus-stack
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: karpenter
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m

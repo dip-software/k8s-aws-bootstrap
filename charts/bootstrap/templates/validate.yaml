@@ -1,0 +1,3 @@
+{{- include "bootstrap.validateRequiredValues" . -}}
+{{- include "bootstrap.validateHspAwsPlatformValues" . -}}
+{{- include "bootstrap.validateK3sValues" . -}}

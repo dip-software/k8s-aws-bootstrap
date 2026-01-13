@@ -1,0 +1,88 @@
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: validate-cert-manager-pod-identity
+  annotations:
+    policies.kyverno.io/title: Validate Cert-Manager Pod Identity
+    policies.kyverno.io/category: Security, AWS
+    policies.kyverno.io/severity: high
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      This policy audits that cert-manager controller pods have the AWS_ROLE_ARN 
+      environment variable injected by the EKS Pod Identity webhook. Uses Audit mode 
+      because cert-manager must start before the webhook (webhook depends on cert-manager for TLS certs).
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: validate-cert-manager-aws-role-arn-env-var
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          names:
+          - "cert-manager-*"
+          namespaces:
+          - cert-manager
+          operations:
+          - CREATE
+          - UPDATE
+    validate:
+      message: >-
+        [AUDIT] Cert-manager controller pod should have AWS_ROLE_ARN injected into container 'cert-manager-controller' by the EKS Pod Identity webhook. 
+        This is expected during initial bootstrap when webhook is not yet running.
+      deny:
+        conditions:
+          all:
+          - key: "{{ `{{ request.object.spec.containers[?name=='cert-manager-controller'] | length(@) }}` }}"
+            operator: GreaterThan
+            value: 0
+          - key: "{{ `{{ request.object.spec.containers[?name=='cert-manager-controller'] | [0].env || ` }}`[]`{{ ` | [?name=='AWS_ROLE_ARN'] | length(@) }}` }}"
+            operator: Equals
+            value: 0
+---
+apiVersion: kyverno.io/v1
+kind: ClusterPolicy
+metadata:
+  name: validate-cert-manager-serviceaccount-pod-identity
+  annotations:
+    policies.kyverno.io/title: Validate Cert-Manager ServiceAccount Pod Identity
+    policies.kyverno.io/category: Security, AWS
+    policies.kyverno.io/severity: medium
+    policies.kyverno.io/subject: Pod
+    policies.kyverno.io/minversion: 1.6.0
+    policies.kyverno.io/description: >-
+      This policy audits that cert-manager controller pods are using the correct 
+      service account that has the EKS role annotation for pod identity.
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  validationFailureAction: Audit
+  background: true
+  rules:
+  - name: validate-cert-manager-serviceaccount-name
+    match:
+      any:
+      - resources:
+          kinds:
+          - Pod
+          names:
+          - "cert-manager-*"
+          namespaces:
+          - cert-manager
+          operations:
+          - CREATE
+          - UPDATE
+    validate:
+      message: >-
+        [AUDIT] Cert-manager controller pod should use ServiceAccount 'cert-manager' in namespace 'cert-manager' so Pod Identity can supply AWS credentials.
+      deny:
+        conditions:
+          all:
+          - key: "{{ `{{ request.object.spec.serviceAccountName }}` }}"
+            operator: NotEquals
+            value: "cert-manager"

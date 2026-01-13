@@ -1,0 +1,163 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: karpenter-restarter
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: karpenter-restarter
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get", "patch"]
+  resourceNames: ["karpenter"]
+- apiGroups: [""]
+  resources: ["pods"]
+  verbs: ["list", "get"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: karpenter-restarter-kube-system
+  namespace: kube-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+rules:
+- apiGroups: ["apps"]
+  resources: ["deployments"]
+  verbs: ["get"]
+  resourceNames: ["amazon-eks-pod-identity-webhook"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: karpenter-restarter
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: karpenter-restarter
+subjects:
+- kind: ServiceAccount
+  name: karpenter-restarter
+  namespace: karpenter
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: karpenter-restarter-kube-system
+  namespace: kube-system
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: karpenter-restarter-kube-system
+subjects:
+- kind: ServiceAccount
+  name: karpenter-restarter
+  namespace: karpenter
+---
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: karpenter-restarter
+  namespace: karpenter
+  annotations:
+    argocd.argoproj.io/sync-wave: "4"
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+  ttlSecondsAfterFinished: 300
+  template:
+    metadata:
+      name: karpenter-restarter
+    spec:
+      serviceAccountName: karpenter-restarter
+      restartPolicy: OnFailure
+      containers:
+      - name: restarter
+        # renovate: datasource=docker depName=alpine/k8s
+        image: alpine/k8s:1.35.0
+        command:
+        - sh
+        - -c
+        - |
+          set -e
+          
+          echo "Waiting for amazon-eks-pod-identity-webhook to be ready..."
+          
+          # Wait for webhook deployment to exist and be ready
+          until kubectl get deployment amazon-eks-pod-identity-webhook -n kube-system 2>/dev/null; do
+            echo "Waiting for webhook deployment to exist..."
+            sleep 5
+          done
+          
+          # Wait for webhook to have at least 1 ready replica
+          until [ "$(kubectl get deployment amazon-eks-pod-identity-webhook -n kube-system -o jsonpath='{.status.readyReplicas}')" -ge 1 ]; do
+            echo "Waiting for webhook to have ready replicas..."
+            sleep 5
+          done
+          
+          echo "Webhook is ready. Checking if Karpenter needs restart..."
+          
+          # Wait for Karpenter deployment to exist
+          until kubectl get deployment karpenter -n karpenter 2>/dev/null; do
+            echo "Waiting for karpenter deployment to exist..."
+            sleep 5
+          done
+          
+          # Check if Karpenter pods already have AWS_ROLE_ARN
+          if kubectl get pods -n karpenter -l app.kubernetes.io/name=karpenter -o jsonpath='{.items[0].spec.containers[?(@.name=="controller")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+            echo "Karpenter already has AWS_ROLE_ARN injected. No restart needed."
+            exit 0
+          fi
+          
+          echo "Karpenter does not have AWS_ROLE_ARN. Restarting deployment..."
+          
+          # Restart Karpenter deployment to get Pod Identity injected
+          kubectl rollout restart deployment karpenter -n karpenter
+          
+          echo "Waiting for Karpenter rollout to complete..."
+          kubectl rollout status deployment karpenter -n karpenter --timeout=5m
+          
+          # Verify AWS_ROLE_ARN is now present
+          if kubectl get pods -n karpenter -l app.kubernetes.io/name=karpenter -o jsonpath='{.items[0].spec.containers[?(@.name=="controller")].env[?(@.name=="AWS_ROLE_ARN")].name}' 2>/dev/null | grep -q "AWS_ROLE_ARN"; then
+            echo "✅ Success! Karpenter now has AWS_ROLE_ARN injected."
+          else
+            echo "⚠️  Warning: Karpenter restarted but AWS_ROLE_ARN not found. Check webhook logs."
+            exit 1
+          fi
+      # Run on system nodes with critical addons
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node-type
+                operator: In
+                values:
+                - system
+                - control-plane
+      tolerations:
+      - key: CriticalAddonsOnly
+        operator: Exists
