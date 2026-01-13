@@ -20,9 +20,6 @@ module.exports = {
       managerFilePatterns: [
         "/.github/workflows/.*.(yaml|yml)/",
         "/.github/actions/.*.(yaml|yml)/",
-        "/base/.*.(yaml|yml)/",
-        "/base/helm-charts/.*.(yaml|yml)/",
-        "/overlays/.*.(yaml|yml)/",
         "/charts/bootstrap/.*.(yaml|yml)/"
       ],
       matchStrings: [
