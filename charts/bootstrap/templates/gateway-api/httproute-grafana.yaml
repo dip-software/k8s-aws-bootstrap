@@ -5,7 +5,7 @@ metadata:
   name: grafana-server-route
   namespace: prometheus
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
+    argocd.argoproj.io/sync-wave: "22"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     link.argocd.argoproj.io/external-link: https://grafana.{{ .Values.environmentConfig.bootstrap.clusterFqdn }}
 spec:

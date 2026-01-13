@@ -5,7 +5,7 @@ metadata:
   name: argocd-server-route
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "20"
+    argocd.argoproj.io/sync-wave: "22"
     argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
     link.argocd.argoproj.io/external-link: https://argocd.{{ .Values.environmentConfig.bootstrap.clusterFqdn }}
 spec:
