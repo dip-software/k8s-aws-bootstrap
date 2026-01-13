@@ -12,7 +12,7 @@ spec:
   source:
     repoURL: oci://public.ecr.aws/karpenter/karpenter
     # renovate: datasource=github-releases depName=aws/karpenter-provider-aws
-    targetRevision: 1.8.4
+    targetRevision: 1.8.3
     path: .
     helm:
       valuesObject:
