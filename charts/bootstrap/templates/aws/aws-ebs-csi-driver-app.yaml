@@ -50,6 +50,9 @@ spec:
             annotations:
               eks.amazonaws.com/role-arn: {{ .Values.environmentConfig.bootstrap.awsEbsCsiDriverRoleArn }}
         node:
+          tolerations:
+            - operator: Exists
+              effect: NoSchedule
           # Node DaemonSet should run on all nodes, no preference needed
           resources:
             requests:
