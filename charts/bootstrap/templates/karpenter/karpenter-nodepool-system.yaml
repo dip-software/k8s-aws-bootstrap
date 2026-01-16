@@ -82,7 +82,7 @@ spec:
     consolidationPolicy: WhenEmptyOrUnderutilized
     
     # Wait time before consolidation (longer for system stability)
-    consolidateAfter: 15m
+    consolidateAfter: 1h
     
     # Budget controls for disruption rate limiting
     budgets:
