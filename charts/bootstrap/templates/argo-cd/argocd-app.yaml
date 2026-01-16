@@ -23,10 +23,6 @@ spec:
           ha:
             enabled: false
 
-        # Redis secret init is done during bootstrapping
-        redisSecretInit:
-          enabled: false
-
         # Configs
         configs:
           params:
@@ -357,7 +353,9 @@ spec:
             serviceMonitor:
               enabled: false
 
-        redisSecretInit:  
+        redisSecretInit:
+          # Redis secret init is done during bootstrapping
+          enabled: false
           affinity:
             nodeAffinity:
               requiredDuringSchedulingIgnoredDuringExecution:
