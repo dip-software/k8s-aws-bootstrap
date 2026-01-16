@@ -29,7 +29,7 @@ rules:
 # Deployment management for restarting Karpenter
 - apiGroups: ["apps"]
   resources: ["deployments"]
-  verbs: ["get", "list", "patch", "watch"]
+  verbs: ["get", "list", "patch", "update", "watch"]
 # Webhook management for removing Kyverno webhooks
 - apiGroups: ["admissionregistration.k8s.io"]
   resources: ["validatingwebhookconfigurations", "mutatingwebhookconfigurations"]
@@ -79,8 +79,17 @@ spec:
           echo "=========================================="
           echo ""
           
-          # Step 0: Remove Kyverno Webhooks (to prevent validation blocking deletion)
-          echo "Step 0: Removing Kyverno Webhooks..."
+          # Step 0: Remove Kyverno (Scale down first to prevent recreation, then remove webhooks)
+          echo "Step 0: Removing Kyverno..."
+
+          echo "Scaling down Kyverno deployments..."
+          if kubectl -n kyverno get deploy >/dev/null 2>&1; then
+             kubectl -n kyverno scale deploy --replicas=0 --all
+             echo "✅ Scaled down all kyverno deployments"
+          else
+             echo "⚠️ Kyverno namespace or deployments not found"
+          fi
+          echo ""
           
           echo "Deleting all Kyverno webhook configurations..."
           if kubectl delete validatingwebhookconfigurations,mutatingwebhookconfigurations -l webhook.kyverno.io/managed-by=kyverno --ignore-not-found; then
