@@ -82,20 +82,11 @@ spec:
           # Step 0: Remove Kyverno Webhooks (to prevent validation blocking deletion)
           echo "Step 0: Removing Kyverno Webhooks..."
           
-          if kubectl get validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg >/dev/null 2>&1; then
-             echo "Deleting validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg..."
-             kubectl delete validatingwebhookconfiguration kyverno-resource-validating-webhook-cfg --ignore-not-found
-             echo "✅ Removed kyverno validating webhook"
+          echo "Deleting all Kyverno webhook configurations..."
+          if kubectl delete validatingwebhookconfigurations,mutatingwebhookconfigurations -l webhook.kyverno.io/managed-by=kyverno --ignore-not-found; then
+             echo "✅ Removed all kyverno webhooks"
           else
-             echo "⚠️ Kyverno validating webhook not found, skipping..."
-          fi
-
-          if kubectl get mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg >/dev/null 2>&1; then
-             echo "Deleting mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg..."
-             kubectl delete mutatingwebhookconfiguration kyverno-resource-mutating-webhook-cfg --ignore-not-found
-             echo "✅ Removed kyverno mutating webhook"
-          else
-             echo "⚠️ Kyverno mutating webhook not found, skipping..."
+             echo "⚠️ Failed to remove some kyverno webhooks (or none found)"
           fi
           echo ""
           
