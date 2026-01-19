@@ -19,9 +19,9 @@ spec:
           resources:
             requests:
               cpu: 50m
-              memory: 200Mi
+              memory: 224Mi
             limits:
-              memory: 264Mi
+              memory: 276Mi
         settings:
           # Enable faster sync for quicker node health detection
           syncPeriod: 0h1m0s
