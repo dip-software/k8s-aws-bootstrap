@@ -37,10 +37,10 @@ spec:
                   - control-plane
         resources:
           limits:
-            memory: 76Mi
+            memory: 84Mi
           requests:
             cpu: 20m
-            memory: 32Mi
+            memory: 64Mi
         serviceAccount:
           create: true
           name: external-dns
