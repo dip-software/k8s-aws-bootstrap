@@ -1,0 +1,37 @@
+{{- if and .Values.features.hspAwsPlatform.enabled .Values.features.hspAwsPlatform.cloudnativePg }}
+apiVersion: dip.io/v1alpha1
+kind: HelmApplication
+metadata:
+  name: plugin-barman-cloud
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "21"
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+spec:
+  project: default
+  source:
+    repoURL: https://cloudnative-pg.io/charts/
+    # renovate: datasource=helm registryUrl=https://cloudnative-pg.io/charts depName=plugin-barman-cloud
+    targetRevision: 0.4.0
+    chart: plugin-barman-cloud
+    helm:
+      valuesObject:
+        fullnameOverride: plugin-barman-cloud
+        # Default namespace for the operator
+        namespace: cnpg-system
+  destination:
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+{{- end }}
