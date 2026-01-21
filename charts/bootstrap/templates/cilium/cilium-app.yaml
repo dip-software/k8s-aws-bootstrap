@@ -68,6 +68,12 @@ spec:
               cpu: 20m
               memory: 32Mi
           
+        # Prometheus Metrics
+        prometheus:
+          enabled: true
+          serviceMonitor:
+            enabled: false # Provide option to enable later if needed, keeps it explicit
+
         # Hubble Observability Platform
         hubble:
           enabled: true
@@ -126,6 +132,10 @@ spec:
         
         # Operator Configuration
         operator:
+          prometheus:
+            enabled: true
+            serviceMonitor:
+              enabled: false
           replicas: 1
           tolerations:
             - key: node.kubernetes.io/not-ready
