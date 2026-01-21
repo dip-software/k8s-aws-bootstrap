@@ -33,6 +33,12 @@ spec:
               type: io2
               encrypted: "true"
             provisioner: ebs.csi.aws.com
+        volumeSnapshotClasses:
+          - name: ebs-csi-aws
+            driver: ebs.csi.aws.com
+            annotations:
+              snapshot.storage.kubernetes.io/is-default-class: "true"
+            deletionPolicy: Delete
         controller:
           # Require critical addon nodes for EBS CSI controller (critical)
           tolerations:

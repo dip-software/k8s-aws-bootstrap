@@ -1,0 +1,48 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: snapshot-controller
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://piraeus.io/helm-charts/
+    chart: snapshot-controller
+    # renovate: datasource=helm registryUrl=https://piraeus.io/helm-charts/ depName=snapshot-controller
+    targetRevision: 5.0.2
+    helm:
+      valuesObject:
+        replicaCount: 1
+        #podDisruptionBudget:
+        #  enabled: true
+        #  minAvailable: 1
+        resources:
+          requests:
+             cpu: 10m
+             memory: 30Mi
+          limits:
+             memory: 50Mi
+        tolerations:
+        - key: CriticalAddonsOnly
+          operator: Exists
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kube-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+  revisionHistoryLimit: 3
