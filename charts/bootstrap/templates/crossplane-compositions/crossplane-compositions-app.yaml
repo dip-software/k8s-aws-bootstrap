@@ -14,7 +14,7 @@ spec:
     path: kustomize
     repoURL: https://github.com/dip-software/crossplane-compositions
     # renovate: datasource=github-tags depName=dip-software/crossplane-compositions
-    targetRevision: v0.0.12
+    targetRevision: v0.0.15
   syncPolicy:
     automated:
       prune: false
